@@ -54,7 +54,8 @@ const getJson = async (path: string) => {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), FETCH_TIMEOUT_MS);
   try {
-    const res = await fetch(`${CMS_URL}${path}`, { signal: ctl.signal });
+    // no-cache: luôn hỏi lại máy chủ, để nghĩa vừa được duyệt không bị trình duyệt giữ bản cũ
+    const res = await fetch(`${CMS_URL}${path}`, { signal: ctl.signal, cache: 'no-cache' });
     if (!res.ok) throw new Error(`${path}: HTTP ${res.status}`);
     return await res.json();
   } finally {
@@ -168,13 +169,33 @@ const fetchRemote = async (): Promise<RemoteContent> => {
   return content;
 };
 
+/** Báo cho giao diện vẽ lại khi bản tải ở nền khác bản đang dùng (vd. nghĩa vừa được admin duyệt). */
+const listeners = new Set<() => void>();
+export const onContentUpdated = (cb: () => void) => {
+  listeners.add(cb);
+  return () => {
+    listeners.delete(cb);
+  };
+};
+
 /** Gọi trước khi dựng giao diện. Không bao giờ ném lỗi: thất bại thì giữ dữ liệu có sẵn trong code. */
 export const loadRemoteContent = async (): Promise<void> => {
   if (!CMS_URL) return;
   const cached = readCache();
   if (cached) {
     apply(cached);
-    fetchRemote().catch((e) => console.warn('Làm mới nội dung CMS thất bại', e));
+    // Bản cache hiện ngay cho khỏi chờ; bản mới về sau thì áp dụng luôn và báo giao diện vẽ lại,
+    // không để người chơi phải mở game lần nữa mới thấy nội dung mới.
+    fetchRemote()
+      .then((fresh) => {
+        const changed =
+          JSON.stringify(fresh.stages) !== JSON.stringify(cached.stages) ||
+          JSON.stringify(fresh.rules) !== JSON.stringify(cached.rules);
+        if (!changed) return;
+        apply(fresh);
+        listeners.forEach((cb) => cb());
+      })
+      .catch((e) => console.warn('Làm mới nội dung CMS thất bại', e));
     return;
   }
   try {

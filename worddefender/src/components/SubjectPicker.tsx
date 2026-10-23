@@ -30,13 +30,19 @@ export const SubjectPicker: React.FC<SubjectPickerProps> = ({
   const totalScore = Object.values(completedLevels).reduce((sum, p) => sum + (p.bestScore ?? 0), 0);
 
   return (
-    <div className="min-h-dvh w-full bg-slate-950 text-slate-100 flex flex-col items-center px-4 py-6">
-      <header className="w-full max-w-5xl flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <h1 className="text-xl sm:text-3xl font-black font-display bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
-            WordDefender
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">Chọn chủ đề để bắt đầu học</p>
+    <div className="min-h-dvh w-full bg-slate-950 text-slate-100 flex flex-col items-center px-3 sm:px-8 pt-[73px] pb-6">
+      {/* Header giống bản đồ màn: thanh cố định rộng hết màn hình */}
+      <header className="fixed top-0 inset-x-0 w-full px-3 sm:px-8 py-3 sm:py-4 gap-2 flex items-center justify-between z-30 border-b border-slate-800/80 bg-slate-950/85 backdrop-blur-md">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/20 font-black text-xl text-white">
+            W
+          </div>
+          <div className="hidden min-[500px]:block min-w-0">
+            <h1 className="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 via-blue-300 to-indigo-300 bg-clip-text text-transparent">
+              WordDefender
+            </h1>
+            <p className="text-xs text-slate-400 hidden md:block">Chọn chủ đề để bắt đầu học</p>
+          </div>
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
@@ -61,7 +67,7 @@ export const SubjectPicker: React.FC<SubjectPickerProps> = ({
         </div>
       </header>
 
-      <div className="w-full max-w-5xl mt-6 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="w-full mt-6 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {stages.map((stage) => {
           const progress = stageProgress(stage, completedLevels);
           const firstLevel = [...stage.levels].sort((a, b) => a.levelNumber - b.levelNumber)[0];

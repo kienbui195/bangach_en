@@ -11,6 +11,7 @@ import {
 } from './utils/storage';
 import { soundManager } from './utils/audio';
 import { StageMap } from './components/StageMap';
+import { onContentUpdated } from './config/remoteContent';
 import { SubjectPicker } from './components/SubjectPicker';
 import { GameArena } from './components/GameArena';
 import { ScoreRankModal } from './components/ScoreRankModal';
@@ -28,6 +29,7 @@ export default function App() {
   // Mở app là chọn chủ đề trước; 'map' là bản đồ màn của chủ đề đã chọn
   const [currentView, setCurrentView] = useState<AppView>('subjects');
   const [currentStageId, setCurrentStageId] = useState<number>(1);
+  const [, setContentVersion] = useState<number>(0); // đổi khi nội dung CMS vừa làm mới, để vẽ lại theo bản mới
   const [unlockedLevelId, setUnlockedLevelId] = useState<number>(101);
   const [completedLevels, setCompletedLevels] = useState<Record<number, LevelProgress>>({});
   const [learnedWords, setLearnedWords] = useState<LearnedWordRecord[]>([]);
@@ -49,6 +51,8 @@ export default function App() {
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [showVirtualKeyboard, setShowVirtualKeyboard] = useState<boolean>(false);
   const [showDeviceModal, setShowDeviceModal] = useState<boolean>(false);
+
+  useEffect(() => onContentUpdated(() => setContentVersion((v) => v + 1)), []);
 
   // Load initial data on mount
   useEffect(() => {
