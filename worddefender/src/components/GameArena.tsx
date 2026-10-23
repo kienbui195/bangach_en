@@ -58,8 +58,8 @@ const SPAWN_MIN_GAP_Y = 15; // % từ trên: gạch mới chỉ ra khi gạch tr
 const GROUND_Y = 94; // % from top: mặt đất mỏng để gạch có quãng đường rơi dài, người chơi có thời gian gõ
 const DANGER_LINE_Y = 72; // % from top ("vạch quy định")
 const CANNON_POS = { x: 50, y: GROUND_Y + 1 }; // % coords
-const CELL_PX = 16; // bề rộng một ô chữ khi thoải mái chỗ (font mono text-base ≈ 9.6px + khoảng thở)
-const CELL_PX_MIN = 10; // co tới mức này cho từ dài trên màn hẹp, nhỏ hơn nữa thì không đọc nổi
+const CELL_PX = 22; // bề rộng một ô chữ khi thoải mái chỗ (chữ ≈ 17px, đủ to để đọc phần gợi ý)
+const CELL_PX_MIN = 12; // co tới mức này cho từ dài trên màn hẹp, nhỏ hơn nữa thì không đọc nổi
 
 /** Ô chữ co lại nếu từ dài hơn chỗ trống của sân, để gạch không tràn ra ngoài màn hình. */
 const cellSizeFor = (len: number, fieldW: number) => {
@@ -1023,7 +1023,7 @@ export const GameArena: React.FC<GameArenaProps> = ({
                     return (
                       <span
                         key={sIdx}
-                        style={{ width: brick.cellPx, fontSize: brick.cellPx * 0.72 }}
+                        style={{ width: brick.cellPx, fontSize: brick.cellPx * 0.8 }}
                         className="font-mono font-bold text-center text-slate-100"
                       >
                         {slot.char}
@@ -1036,7 +1036,7 @@ export const GameArena: React.FC<GameArenaProps> = ({
                     return (
                       <span
                         key={sIdx}
-                        style={{ width: brick.cellPx, fontSize: brick.cellPx * 0.72 }}
+                        style={{ width: brick.cellPx, fontSize: brick.cellPx * 0.8 }}
                         className="font-mono font-extrabold text-center text-emerald-300 border-b-2 border-emerald-400 animate-fadeIn"
                       >
                         {slot.userInput}
@@ -1048,7 +1048,7 @@ export const GameArena: React.FC<GameArenaProps> = ({
                   return (
                     <span
                       key={sIdx}
-                      style={{ width: brick.cellPx, fontSize: brick.cellPx * 0.72 }}
+                      style={{ width: brick.cellPx, fontSize: brick.cellPx * 0.8 }}
                       className={`font-mono font-extrabold text-base rounded transition-all text-center ${
                         slot.hasError
                           ? 'text-rose-500 bg-rose-500/20 border-b-2 border-rose-500 animate-shake'

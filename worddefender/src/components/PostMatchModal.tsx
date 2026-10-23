@@ -45,7 +45,7 @@ export const PostMatchModal: React.FC<PostMatchModalProps> = ({
 
   // Bảng tổng kết hiện số sao của CHÍNH ván vừa chơi (không phải kỷ lục đã lưu), tính bằng
   // đúng công thức mà chỗ lưu tiến độ dùng.
-  const earnedStars = isWin ? matchStars(stats.accuracy, stats.heartsRemaining) : 0;
+  const earnedStars = isWin ? matchStars(stats.heartsRemaining) : 0;
 
   const statCell = (icon: React.ReactNode, tone: string, label: string, value: React.ReactNode) => (
     <div className="flex items-center gap-2 min-w-0">

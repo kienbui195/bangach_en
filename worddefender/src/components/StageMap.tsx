@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { LevelConfig, StageConfig } from '../types/game';
 import { ThemeToggle } from './ThemeToggle';
 import { FullscreenButton } from './FullscreenButton';
@@ -43,6 +43,13 @@ export const StageMap: React.FC<StageMapProps> = ({
     return curr.id <= unlockedLevelId ? curr : prev;
   }, levelsAscending[0]);
 
+  // Vào bản đồ là tự cuộn tới màn hiện tại (nơi có lá cờ), khỏi phải kéo từ Màn 1 lên
+  const currentNodeRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => currentNodeRef.current?.scrollIntoView({ block: 'center' }));
+    return () => cancelAnimationFrame(id);
+  }, [currentStage.id]);
+
   // Total stars earned
   const totalStars = Object.values(completedLevels).reduce((acc, curr) => acc + (curr.stars || 0), 0);
   const totalScore = Object.values(completedLevels).reduce((acc, curr) => acc + (curr.bestScore || 0), 0);
@@ -65,7 +72,7 @@ export const StageMap: React.FC<StageMapProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-start pt-[73px] pb-16 selection:bg-cyan-500 selection:text-white relative overflow-x-hidden">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-start pt-[73px] pb-16 selection:bg-cyan-500 selection:text-white relative overflow-x-clip">
       {/* Background ambient decorative grid */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-950 to-slate-950 pointer-events-none" />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
@@ -123,7 +130,7 @@ export const StageMap: React.FC<StageMapProps> = ({
       </header>
 
       {/* Tên chủ đề đang chơi; muốn đổi chủ đề thì quay về trang chọn chủ đề */}
-      <div className="w-full max-w-3xl px-4 mt-6 z-10 flex flex-col items-center">
+      <div className="sticky top-[73px] z-20 w-full max-w-3xl px-4 pt-6 pb-1">
         <div className="flex items-center gap-2 w-full bg-slate-900/90 border border-slate-800 rounded-2xl p-2 shadow-xl backdrop-blur-md">
           <button
             onClick={onBackToSubjects}
@@ -144,11 +151,11 @@ export const StageMap: React.FC<StageMapProps> = ({
           {/* giữ chỗ cân đối với nút bên trái */}
           <div className="w-[42px] sm:w-[88px] shrink-0" />
         </div>
-
-        <p className="text-xs text-slate-400 text-center mt-2 max-w-md">
-          {currentStage.description}
-        </p>
       </div>
+
+      <p className="text-xs text-slate-400 text-center mt-1 max-w-md px-4 z-10">
+        {currentStage.description}
+      </p>
 
       {/* Main Map Canvas - Vertical Path like Sketch */}
       <div className="w-full max-w-5xl px-4 mt-8 z-10 flex flex-col items-center relative">
@@ -168,12 +175,13 @@ export const StageMap: React.FC<StageMapProps> = ({
               return (
                 <div
                   key={level.id}
+                  ref={isCurrentFlag ? currentNodeRef : undefined}
                   className={`relative flex flex-col items-center transition-all ${offsetClass}`}
                 >
                   {/* Flag indicator on current target level (like in user's sketch: 'lá cờ mốc hiện tại') */}
                   {isCurrentFlag && (
                     <div className="absolute -top-10 sm:-top-11 flex flex-col items-center animate-bounce z-20 pointer-events-none">
-                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-400/40 border border-amber-300">
+                      <div className="flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-md bg-amber-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-400/40 border border-amber-300">
                         <Flag className="w-3.5 h-3.5 fill-slate-950" />
                         <span>MỐC HIỆN TẠI</span>
                       </div>

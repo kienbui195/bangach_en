@@ -135,7 +135,7 @@ export default function App() {
       const currentIndex = allLevels.findIndex((l) => l.id === selectedLevel.id);
       const nextLevel = currentIndex !== -1 && currentIndex + 1 < allLevels.length ? allLevels[currentIndex + 1] : null;
 
-      const stars = matchStars(stats.accuracy, stats.heartsRemaining);
+      const stars = matchStars(stats.heartsRemaining);
 
       // Bản ghi trả về đã gộp kỷ lục cũ với ván vừa chơi; dùng luôn để bản đồ màn hiện số mới
       // ngay, không phụ thuộc vào việc đọc lại localStorage.

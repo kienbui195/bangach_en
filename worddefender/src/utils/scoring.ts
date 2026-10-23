@@ -43,13 +43,10 @@ export const calculateWordScore = (input: WordScoreInput): WordScoreBreakdown =>
 };
 
 /**
- * Số sao của MỘT ván vừa chơi: 3 sao khi gần như không gõ sai và còn đủ tim, 2 sao khi gõ khá
- * chuẩn, còn lại 1 sao. Dùng chung cho chỗ lưu tiến độ (App) và bảng tổng kết (PostMatchModal)
- * để hai nơi không lệch nhau; mốc tim lấy theo luật chơi chứ không viết cứng số 3, vì luật có
- * thể được CMS thay đổi.
+ * Số sao của MỘT ván bằng số tim còn lại khi vượt màn: 3 tim = 3 sao, 2 tim = 2 sao, 1 tim = 1 sao.
+ * Tim lẻ (nửa tim) làm tròn xuống, nên còn 2,5 tim được 2 sao. Thắng thì luôn có ít nhất 1 sao.
+ * Dùng chung cho chỗ lưu tiến độ (App) và bảng tổng kết (PostMatchModal) để hai nơi không lệch nhau;
+ * mốc tối đa lấy theo luật chơi chứ không viết cứng số 3, vì luật có thể được CMS thay đổi.
  */
-export const matchStars = (accuracy: number, heartsRemaining: number): number => {
-  if (accuracy >= 90 && heartsRemaining >= GAME_RULES.hearts.max) return 3;
-  if (accuracy >= 75) return 2;
-  return 1;
-};
+export const matchStars = (heartsRemaining: number): number =>
+  Math.min(GAME_RULES.hearts.max, Math.max(1, Math.floor(heartsRemaining)));
