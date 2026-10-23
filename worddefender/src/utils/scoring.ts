@@ -42,11 +42,17 @@ export const calculateWordScore = (input: WordScoreInput): WordScoreBreakdown =>
   };
 };
 
+/** Muốn đạt 3 sao phải gõ chính xác trên mức này (%), để gõ bừa không qua màn với 3 sao. */
+export const THREE_STAR_ACCURACY = 85;
+
 /**
- * Số sao của MỘT ván bằng số tim còn lại khi vượt màn: 3 tim = 3 sao, 2 tim = 2 sao, 1 tim = 1 sao.
- * Tim lẻ (nửa tim) làm tròn xuống, nên còn 2,5 tim được 2 sao. Thắng thì luôn có ít nhất 1 sao.
- * Dùng chung cho chỗ lưu tiến độ (App) và bảng tổng kết (PostMatchModal) để hai nơi không lệch nhau;
- * mốc tối đa lấy theo luật chơi chứ không viết cứng số 3, vì luật có thể được CMS thay đổi.
+ * Số sao của MỘT ván: theo số tim còn lại (3 tim = 3 sao, 2 tim = 2 sao, 1 tim = 1 sao; nửa tim làm
+ * tròn xuống), nhưng độ chính xác không trên THREE_STAR_ACCURACY thì tối đa 2 sao. Gõ sai không bị
+ * trừ tim ngay, nên nếu sao chỉ tính theo tim thì bấm bừa vẫn qua màn đẹp. Thắng thì luôn có ít nhất
+ * 1 sao. Dùng chung cho chỗ lưu tiến độ (App) và bảng tổng kết (PostMatchModal) để hai nơi không lệch
+ * nhau; mốc tối đa lấy theo luật chơi chứ không viết cứng số 3, vì luật có thể được CMS thay đổi.
  */
-export const matchStars = (heartsRemaining: number): number =>
-  Math.min(GAME_RULES.hearts.max, Math.max(1, Math.floor(heartsRemaining)));
+export const matchStars = (heartsRemaining: number, accuracy: number): number => {
+  const max = accuracy > THREE_STAR_ACCURACY ? GAME_RULES.hearts.max : GAME_RULES.hearts.max - 1;
+  return Math.min(max, Math.max(1, Math.floor(heartsRemaining)));
+};

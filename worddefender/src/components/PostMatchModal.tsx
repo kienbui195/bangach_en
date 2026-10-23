@@ -3,7 +3,7 @@ import { MatchStats, WordItem } from '../types/game';
 import { Trophy, RotateCcw, ArrowRight, Home, Volume2, Target, Zap, Clock, CheckCircle2, XCircle, Star, BookOpen } from 'lucide-react';
 import { soundManager } from '../utils/audio';
 import confetti from 'canvas-confetti';
-import { matchStars } from '../utils/scoring';
+import { matchStars, THREE_STAR_ACCURACY } from '../utils/scoring';
 
 interface PostMatchModalProps {
   stats: MatchStats | null;
@@ -45,7 +45,7 @@ export const PostMatchModal: React.FC<PostMatchModalProps> = ({
 
   // Bảng tổng kết hiện số sao của CHÍNH ván vừa chơi (không phải kỷ lục đã lưu), tính bằng
   // đúng công thức mà chỗ lưu tiến độ dùng.
-  const earnedStars = isWin ? matchStars(stats.heartsRemaining) : 0;
+  const earnedStars = isWin ? matchStars(stats.heartsRemaining, stats.accuracy) : 0;
 
   const statCell = (icon: React.ReactNode, tone: string, label: string, value: React.ReactNode) => (
     <div className="flex items-center gap-2 min-w-0">
@@ -104,6 +104,11 @@ export const PostMatchModal: React.FC<PostMatchModalProps> = ({
                 />
               ))}
             </div>
+          )}
+          {isWin && (
+            <p className="text-center text-[11px] sm:text-xs text-slate-400 mt-1 shrink-0">
+              Cần chính xác trên {THREE_STAR_ACCURACY}% để đạt 3 sao
+            </p>
           )}
         </div>
 
