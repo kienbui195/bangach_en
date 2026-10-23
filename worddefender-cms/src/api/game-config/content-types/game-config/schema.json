@@ -1,0 +1,25 @@
+{
+  "kind": "singleType",
+  "collectionName": "game_configs",
+  "info": {
+    "singularName": "game-config",
+    "pluralName": "game-configs",
+    "displayName": "Game Config",
+    "description": "Luật chơi dạng JSON, khớp src/config/gameRules.ts của game"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "rules": {
+      "type": "json",
+      "required": true
+    },
+    "version": {
+      "type": "integer",
+      "default": 1,
+      "required": true
+    }
+  }
+}

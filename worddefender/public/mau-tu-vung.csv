@@ -1,0 +1,5 @@
+headword,meaning_vi,phonetic,part_of_speech,kind,example,example_vi,note
+capacitor,tụ điện,/kəˈpæsɪtər/,noun,term,A capacitor stores electric charge.,Tụ điện lưu trữ điện tích.,
+resistor,điện trở,/rɪˈzɪstər/,noun,term,The resistor limits the current.,Điện trở hạn chế dòng điện.,
+op-amp,bộ khuếch đại thuật toán,/ɑːp æmp/,noun,abbreviation,An op-amp amplifies the input signal.,Op-amp khuếch đại tín hiệu vào.,Operational amplifier
+ESD,phóng tĩnh điện,/ˌiː es ˈdiː/,noun,abbreviation,ESD can damage sensitive chips.,Phóng tĩnh điện có thể làm hỏng chip nhạy cảm.,Electrostatic discharge

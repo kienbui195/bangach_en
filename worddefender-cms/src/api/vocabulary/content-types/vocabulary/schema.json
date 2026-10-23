@@ -1,0 +1,106 @@
+{
+  "kind": "collectionType",
+  "collectionName": "vocabularies",
+  "info": {
+    "singularName": "vocabulary",
+    "pluralName": "vocabularies",
+    "displayName": "Vocabulary",
+    "description": "Từ vựng phẳng (chính thức và riêng của người chơi); unique (ownerKey, headword) kiểm trong lifecycle"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "headword": {
+      "type": "string",
+      "required": true,
+      "minLength": 2,
+      "maxLength": 24,
+      "regex": "^[a-z]+$"
+    },
+    "displayForm": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "enumeration",
+      "enum": [
+        "word",
+        "term",
+        "abbreviation"
+      ],
+      "default": "word",
+      "required": true
+    },
+    "ownerKey": {
+      "type": "string",
+      "default": "official",
+      "required": true
+    },
+    "topicSlug": {
+      "type": "string"
+    },
+    "levelNumber": {
+      "type": "integer",
+      "min": 1
+    },
+    "orderIndex": {
+      "type": "integer",
+      "min": 0
+    },
+    "category": {
+      "type": "string"
+    },
+    "meaningVi": {
+      "type": "string",
+      "required": true
+    },
+    "phonetic": {
+      "type": "string"
+    },
+    "partOfSpeech": {
+      "type": "enumeration",
+      "enum": [
+        "noun",
+        "verb",
+        "adjective",
+        "adverb",
+        "pronoun",
+        "preposition",
+        "conjunction",
+        "auxiliary",
+        "particle",
+        "determiner",
+        "interjection",
+        "phrase"
+      ]
+    },
+    "example": {
+      "type": "text"
+    },
+    "cefr": {
+      "type": "enumeration",
+      "enum": [
+        "A1",
+        "A2",
+        "B1",
+        "B2",
+        "C1",
+        "C2"
+      ]
+    },
+    "length": {
+      "type": "integer",
+      "min": 2,
+      "max": 24
+    },
+    "audio": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "audios"
+      ]
+    }
+  }
+}

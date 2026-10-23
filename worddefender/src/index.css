@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  .transform-style-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Cuộn nằm trong web app, không kéo theo trình duyệt: không pull-to-refresh, không hiện/ẩn thanh địa chỉ khi vuốt */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+#root {
+  /* fixed theo khung nhìn thật: trên iOS (Safari/Brave) 100dvh đôi khi ngắn hơn vùng nhìn thấy, để lại khoảng trống dưới game */
+  position: fixed;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow-x: hidden;
+  touch-action: manipulation;
+}
+
+.font-display {
+  font-family: 'Fredoka', 'Nunito', system-ui, sans-serif;
+}
+
+/* Light theme: đảo thang màu slate (950↔50, 900↔100, ...) nên toàn bộ component tự đổi theo,
+   không cần sửa từng class. Các màu nhấn (cyan/emerald/amber/rose) đậm lên để đủ tương phản trên nền sáng. */
+:root.light {
+  color-scheme: light;
+  --color-slate-50: #020617;
+  --color-slate-100: #0f172a;
+  --color-slate-200: #1e293b;
+  --color-slate-300: #334155;
+  --color-slate-400: #475569;
+  --color-slate-500: #64748b;
+  --color-slate-600: #94a3b8;
+  --color-slate-700: #cbd5e1;
+  --color-slate-800: #e2e8f0;
+  --color-slate-900: #f1f5f9;
+  --color-slate-950: #f8fafc;
+  --color-white: #0f172a;
+
+  --color-cyan-300: #0e7490;
+  --color-cyan-400: #0891b2;
+  --color-emerald-300: #047857;
+  --color-emerald-400: #059669;
+  --color-amber-300: #b45309;
+  --color-amber-400: #d97706;
+  --color-rose-400: #e11d48;
+  --color-indigo-300: #4338ca;
+  --color-blue-300: #1d4ed8;
+
+  /* Nền tối của gạch/nhãn (950, 900) đổi sang tông pastel để không bị nâu/đỏ sẫm trên nền sáng */
+  --color-cyan-950: #ecfeff;
+  --color-amber-950: #fffbeb;
+  --color-rose-950: #fff1f2;
+  --color-rose-900: #fecdd3;
+  --color-emerald-950: #ecfdf5;
+  --color-indigo-950: #eef2ff;
+  --color-cyan-900: #cffafe;
+  --color-blue-900: #dbeafe;
+}
+
+:root.light body {
+  background: #f8fafc;
+}
+
+/* Hiệu ứng cộng điểm */
+@keyframes scorePop {
+  0% { transform: scale(1); filter: hue-rotate(0deg); }
+  30% { transform: scale(1.6); filter: hue-rotate(60deg) brightness(1.2); }
+  100% { transform: scale(1); filter: hue-rotate(0deg); }
+}
+.animate-scorePop {
+  animation: scorePop 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes scoreFloat {
+  0% { opacity: 0; transform: translateY(6px) scale(0.8); }
+  20% { opacity: 1; transform: translateY(0) scale(1.15); }
+  100% { opacity: 0; transform: translateY(-14px) scale(1); }
+}
+.animate-scoreFloat {
+  animation: scoreFloat 1.3s ease-out forwards;
+}
+
+@keyframes countPop {
+  0% { transform: scale(1.6); opacity: 0; }
+  30% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.85; }
+}

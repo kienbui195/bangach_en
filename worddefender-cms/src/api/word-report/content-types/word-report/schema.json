@@ -1,0 +1,70 @@
+{
+  "kind": "collectionType",
+  "collectionName": "word_reports",
+  "info": {
+    "singularName": "word-report",
+    "pluralName": "word-reports",
+    "displayName": "Word Report",
+    "description": "Người chơi báo từ sai (chính tả, nghĩa, phiên âm, ví dụ, file đọc) kèm đề xuất sửa; admin đổi reviewStatus sang approved thì lifecycle tự ghi vào từ vựng. Không đặt tên trường là status vì trùng tham số draft/publish của Content Manager."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "headword": {
+      "type": "string",
+      "required": true,
+      "maxLength": 24
+    },
+    "field": {
+      "type": "enumeration",
+      "enum": [
+        "headword",
+        "displayForm",
+        "meaningVi",
+        "phonetic",
+        "example",
+        "audio"
+      ],
+      "required": true
+    },
+    "currentValue": {
+      "type": "text"
+    },
+    "suggestedValue": {
+      "type": "text"
+    },
+    "suggestedAudio": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "audios"
+      ]
+    },
+    "note": {
+      "type": "text",
+      "maxLength": 500
+    },
+    "reporterKey": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "reviewStatus": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "required": true
+    },
+    "reviewNote": {
+      "type": "text"
+    },
+    "appliedAt": {
+      "type": "datetime"
+    }
+  }
+}

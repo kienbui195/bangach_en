@@ -1,0 +1,87 @@
+{
+  "kind": "collectionType",
+  "collectionName": "topics",
+  "info": {
+    "singularName": "topic",
+    "pluralName": "topics",
+    "displayName": "Topic",
+    "description": "Chặng: chính thức hoặc bộ từ riêng của người chơi"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "source": {
+      "type": "enumeration",
+      "enum": [
+        "official",
+        "custom"
+      ],
+      "default": "official",
+      "required": true
+    },
+    "visibility": {
+      "type": "enumeration",
+      "enum": [
+        "private",
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "approved",
+      "required": true
+    },
+    "ownerKey": {
+      "type": "string",
+      "default": "official",
+      "required": true
+    },
+    "domain": {
+      "type": "string"
+    },
+    "order": {
+      "type": "integer",
+      "min": 0,
+      "default": 0
+    },
+    "cefr": {
+      "type": "enumeration",
+      "enum": [
+        "A1",
+        "A2",
+        "B1",
+        "B2",
+        "C1",
+        "C2"
+      ]
+    },
+    "description": {
+      "type": "text"
+    },
+    "themeColor": {
+      "type": "string"
+    },
+    "reviewedBy": {
+      "type": "string"
+    },
+    "reviewedAt": {
+      "type": "datetime"
+    },
+    "levels": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::level.level",
+      "mappedBy": "topic"
+    }
+  }
+}

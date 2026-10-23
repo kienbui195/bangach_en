@@ -1,0 +1,9 @@
+{
+  "name": "WordDefender - Bắn Gạch Từ Vựng",
+  "description": "Game bắn pháo phòng thủ từ vựng tiếng Anh sinh động với cơ chế gõ chữ, phá gạch, phát âm từ vựng, đa nền tảng và chế độ ôn tập.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ],
+  "author": "chungcake69"
+}

@@ -1,0 +1,25 @@
+{
+  "name": "wd-import-export",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Import / export nội dung bằng JSON hoặc CSV, viết riêng cho Strapi 5",
+  "author": "chungcake69",
+  "strapi": {
+    "kind": "plugin",
+    "name": "wd-import-export",
+    "displayName": "Import / Export"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./strapi-admin": {
+      "source": "./strapi-admin.js",
+      "import": "./strapi-admin.js",
+      "default": "./strapi-admin.js"
+    },
+    "./strapi-server": {
+      "source": "./strapi-server.js",
+      "require": "./strapi-server.js",
+      "default": "./strapi-server.js"
+    }
+  }
+}

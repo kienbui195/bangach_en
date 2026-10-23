@@ -1,0 +1,81 @@
+{
+  "kind": "collectionType",
+  "collectionName": "levels",
+  "info": {
+    "singularName": "level",
+    "pluralName": "levels",
+    "displayName": "Level",
+    "description": "Màn chơi; pool từ suy ra từ vocabulary (topicSlug, levelNumber)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "uniqueKey": {
+      "type": "string",
+      "required": true
+    },
+    "levelNumber": {
+      "type": "integer",
+      "min": 1,
+      "required": true
+    },
+    "title": {
+      "type": "string"
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "difficulty": {
+      "type": "enumeration",
+      "enum": [
+        "easy",
+        "medium",
+        "hard",
+        "boss"
+      ],
+      "default": "easy",
+      "required": true
+    },
+    "isBoss": {
+      "type": "boolean",
+      "default": false
+    },
+    "targetCount": {
+      "type": "integer",
+      "min": 1,
+      "required": true
+    },
+    "minMissing": {
+      "type": "integer",
+      "min": 1,
+      "default": 1
+    },
+    "maxMissing": {
+      "type": "integer",
+      "min": 1,
+      "default": 3
+    },
+    "fallSpeed": {
+      "type": "decimal"
+    },
+    "spawnInterval": {
+      "type": "integer"
+    },
+    "maxConcurrent": {
+      "type": "integer",
+      "min": 1
+    },
+    "isGenerated": {
+      "type": "boolean",
+      "default": false
+    },
+    "topic": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::topic.topic",
+      "inversedBy": "levels"
+    }
+  }
+}

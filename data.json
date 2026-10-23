@@ -1,0 +1,702 @@
+[
+  {
+    "headword": "pace",
+    "ownerKey": "official",
+    "meaningVi": "Tốc độ, nhịp độ",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pacific",
+    "ownerKey": "official",
+    "meaningVi": "Hòa bình, Thái Bình Dương",
+    "topicSlug": "geography",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pack",
+    "ownerKey": "official",
+    "meaningVi": "Đóng gói, bưu kiện",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "package",
+    "ownerKey": "official",
+    "meaningVi": "Gói hàng, kiện hàng",
+    "topicSlug": "business",
+    "levelNumber": 5
+  },
+  {
+    "headword": "packet",
+    "ownerKey": "official",
+    "meaningVi": "Gói nhỏ",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pact",
+    "ownerKey": "official",
+    "meaningVi": "Hiệp ước, thỏa thuận",
+    "topicSlug": "politics",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pad",
+    "ownerKey": "official",
+    "meaningVi": "Đệm, tập giấy",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "paddle",
+    "ownerKey": "official",
+    "meaningVi": "Mái chèo, chèo thuyền",
+    "topicSlug": "sports",
+    "levelNumber": 5
+  },
+  {
+    "headword": "page",
+    "ownerKey": "official",
+    "meaningVi": "Trang sách",
+    "topicSlug": "education",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pain",
+    "ownerKey": "official",
+    "meaningVi": "Cơn đau, sự đau đớn",
+    "topicSlug": "health",
+    "levelNumber": 5
+  },
+  {
+    "headword": "painful",
+    "ownerKey": "official",
+    "meaningVi": "Đau đớn",
+    "topicSlug": "health",
+    "levelNumber": 5
+  },
+  {
+    "headword": "paint",
+    "ownerKey": "official",
+    "meaningVi": "Sơn, vẽ",
+    "topicSlug": "art",
+    "levelNumber": 5
+  },
+  {
+    "headword": "painter",
+    "ownerKey": "official",
+    "meaningVi": "Họa sĩ, thợ sơn",
+    "topicSlug": "art",
+    "levelNumber": 5
+  },
+  {
+    "headword": "painting",
+    "ownerKey": "official",
+    "meaningVi": "Bức tranh",
+    "topicSlug": "art",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pair",
+    "ownerKey": "official",
+    "meaningVi": "Đôi, cặp",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "palace",
+    "ownerKey": "official",
+    "meaningVi": "Cung điện",
+    "topicSlug": "history",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pale",
+    "ownerKey": "official",
+    "meaningVi": "Tái nhợt, nhạt",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "palm",
+    "ownerKey": "official",
+    "meaningVi": "Lòng bàn tay, cây dừa",
+    "topicSlug": "nature",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pamphlet",
+    "ownerKey": "official",
+    "meaningVi": "Cuốn sách nhỏ quảng cáo",
+    "topicSlug": "business",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pan",
+    "ownerKey": "official",
+    "meaningVi": "Cái chảo",
+    "topicSlug": "cooking",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pancake",
+    "ownerKey": "official",
+    "meaningVi": "Bánh kếp",
+    "topicSlug": "food",
+    "levelNumber": 5
+  },
+  {
+    "headword": "panel",
+    "ownerKey": "official",
+    "meaningVi": "Bảng điều khiển, ban giám khảo",
+    "topicSlug": "technology",
+    "levelNumber": 5
+  },
+  {
+    "headword": "panic",
+    "ownerKey": "official",
+    "meaningVi": "Sự hoảng loạn",
+    "topicSlug": "psychology",
+    "levelNumber": 5
+  },
+  {
+    "headword": "panorama",
+    "ownerKey": "official",
+    "meaningVi": "Toàn cảnh",
+    "topicSlug": "geography",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pants",
+    "ownerKey": "official",
+    "meaningVi": "Quần dài",
+    "topicSlug": "fashion",
+    "levelNumber": 5
+  },
+  {
+    "headword": "paper",
+    "ownerKey": "official",
+    "meaningVi": "Giấy, bài báo",
+    "topicSlug": "education",
+    "levelNumber": 5
+  },
+  {
+    "headword": "parable",
+    "ownerKey": "official",
+    "meaningVi": "Truyện ngụ ngôn",
+    "topicSlug": "literature",
+    "levelNumber": 5
+  },
+  {
+    "headword": "parachute",
+    "ownerKey": "official",
+    "meaningVi": "Cái dù nhảy",
+    "topicSlug": "sports",
+    "levelNumber": 5
+  },
+  {
+    "headword": "parade",
+    "ownerKey": "official",
+    "meaningVi": "Cuộc diễu hành",
+    "topicSlug": "society",
+    "levelNumber": 5
+  },
+  {
+    "headword": "paradigm",
+    "ownerKey": "official",
+    "meaningVi": "Mô hình, kiểu mẫu",
+    "topicSlug": "science",
+    "levelNumber": 5
+  },
+  {
+    "headword": "paradox",
+    "ownerKey": "official",
+    "meaningVi": "Sự ngược đời, nghịch lý",
+    "topicSlug": "philosophy",
+    "levelNumber": 5
+  },
+  {
+    "headword": "paragraph",
+    "ownerKey": "official",
+    "meaningVi": "Đoạn văn",
+    "topicSlug": "education",
+    "levelNumber": 5
+  },
+  {
+    "headword": "parallel",
+    "ownerKey": "official",
+    "meaningVi": "Song song",
+    "topicSlug": "mathematics",
+    "levelNumber": 5
+  },
+  {
+    "headword": "paralyze",
+    "ownerKey": "official",
+    "meaningVi": "Làm tê liệt",
+    "topicSlug": "medicine",
+    "levelNumber": 5
+  },
+  {
+    "headword": "paramount",
+    "ownerKey": "official",
+    "meaningVi": "Tối cao, quan trọng nhất",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "parcel",
+    "ownerKey": "official",
+    "meaningVi": "Bưu kiện",
+    "topicSlug": "business",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pardon",
+    "ownerKey": "official",
+    "meaningVi": "Thứ lỗi, ân xá",
+    "topicSlug": "law",
+    "levelNumber": 5
+  },
+  {
+    "headword": "parent",
+    "ownerKey": "official",
+    "meaningVi": "Cha hoặc mẹ",
+    "topicSlug": "family",
+    "levelNumber": 5
+  },
+  {
+    "headword": "parental",
+    "ownerKey": "official",
+    "meaningVi": "Thuộc cha mẹ",
+    "topicSlug": "family",
+    "levelNumber": 5
+  },
+  {
+    "headword": "park",
+    "ownerKey": "official",
+    "meaningVi": "Công viên, đỗ xe",
+    "topicSlug": "nature",
+    "levelNumber": 5
+  },
+  {
+    "headword": "parliament",
+    "ownerKey": "official",
+    "meaningVi": "Nghị viện, quốc hội",
+    "topicSlug": "politics",
+    "levelNumber": 5
+  },
+  {
+    "headword": "parrot",
+    "ownerKey": "official",
+    "meaningVi": "Con vẹt",
+    "topicSlug": "animals",
+    "levelNumber": 5
+  },
+  {
+    "headword": "part",
+    "ownerKey": "official",
+    "meaningVi": "Phần, bộ phận",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "partial",
+    "ownerKey": "official",
+    "meaningVi": "Một phần, thiên vị",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "participant",
+    "ownerKey": "official",
+    "meaningVi": "Người tham gia",
+    "topicSlug": "society",
+    "levelNumber": 5
+  },
+  {
+    "headword": "participate",
+    "ownerKey": "official",
+    "meaningVi": "Tham gia",
+    "topicSlug": "society",
+    "levelNumber": 5
+  },
+  {
+    "headword": "particle",
+    "ownerKey": "official",
+    "meaningVi": "Hạt, phần tử",
+    "topicSlug": "physics",
+    "levelNumber": 5
+  },
+  {
+    "headword": "particular",
+    "ownerKey": "official",
+    "meaningVi": "Cụ thể, đặc biệt",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "partisan",
+    "ownerKey": "official",
+    "meaningVi": "Đảng viên, thiên vị",
+    "topicSlug": "politics",
+    "levelNumber": 5
+  },
+  {
+    "headword": "partner",
+    "ownerKey": "official",
+    "meaningVi": "Đối tác, bạn đồng hành",
+    "topicSlug": "business",
+    "levelNumber": 5
+  },
+  {
+    "headword": "partnership",
+    "ownerKey": "official",
+    "meaningVi": "Quan hệ đối tác",
+    "topicSlug": "business",
+    "levelNumber": 5
+  },
+  {
+    "headword": "party",
+    "ownerKey": "official",
+    "meaningVi": "Bữa tiệc, đảng phái",
+    "topicSlug": "society",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pass",
+    "ownerKey": "official",
+    "meaningVi": "Vượt qua, chuyền",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "passage",
+    "ownerKey": "official",
+    "meaningVi": "Lối đi, đoạn văn",
+    "topicSlug": "literature",
+    "levelNumber": 5
+  },
+  {
+    "headword": "passenger",
+    "ownerKey": "official",
+    "meaningVi": "Hành khách",
+    "topicSlug": "travel",
+    "levelNumber": 5
+  },
+  {
+    "headword": "passion",
+    "ownerKey": "official",
+    "meaningVi": "Đam mê",
+    "topicSlug": "emotion",
+    "levelNumber": 5
+  },
+  {
+    "headword": "passionate",
+    "ownerKey": "official",
+    "meaningVi": "Sôi nổi, say đắm",
+    "topicSlug": "emotion",
+    "levelNumber": 5
+  },
+  {
+    "headword": "passive",
+    "ownerKey": "official",
+    "meaningVi": "Bị động, thụ động",
+    "topicSlug": "psychology",
+    "levelNumber": 5
+  },
+  {
+    "headword": "passport",
+    "ownerKey": "official",
+    "meaningVi": "Hộ chiếu",
+    "topicSlug": "travel",
+    "levelNumber": 5
+  },
+  {
+    "headword": "password",
+    "ownerKey": "official",
+    "meaningVi": "Mật khẩu",
+    "topicSlug": "technology",
+    "levelNumber": 5
+  },
+  {
+    "headword": "past",
+    "ownerKey": "official",
+    "meaningVi": "Quá khứ",
+    "topicSlug": "history",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pasta",
+    "ownerKey": "official",
+    "meaningVi": "Mỳ Ý",
+    "topicSlug": "food",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pasture",
+    "ownerKey": "official",
+    "meaningVi": "Đồng cỏ",
+    "topicSlug": "agriculture",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pat",
+    "ownerKey": "official",
+    "meaningVi": "Vỗ nhẹ",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "patch",
+    "ownerKey": "official",
+    "meaningVi": "Miếng vá, mảnh đất",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "patent",
+    "ownerKey": "official",
+    "meaningVi": "Bằng sáng chế",
+    "topicSlug": "law",
+    "levelNumber": 5
+  },
+  {
+    "headword": "path",
+    "ownerKey": "official",
+    "meaningVi": "Con đường, đường dẫn",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pathetic",
+    "ownerKey": "official",
+    "meaningVi": "Thảm hại, đáng thương",
+    "topicSlug": "emotion",
+    "levelNumber": 5
+  },
+  {
+    "headword": "patience",
+    "ownerKey": "official",
+    "meaningVi": "Sự kiên nhẫn",
+    "topicSlug": "personality",
+    "levelNumber": 5
+  },
+  {
+    "headword": "patient",
+    "ownerKey": "official",
+    "meaningVi": "Bệnh nhân, kiên nhẫn",
+    "topicSlug": "medicine",
+    "levelNumber": 5
+  },
+  {
+    "headword": "patrol",
+    "ownerKey": "official",
+    "meaningVi": "Tuần tra",
+    "topicSlug": "law",
+    "levelNumber": 5
+  },
+  {
+    "headword": "patron",
+    "ownerKey": "official",
+    "meaningVi": "Khách hàng quen, người bảo trợ",
+    "topicSlug": "business",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pattern",
+    "ownerKey": "official",
+    "meaningVi": "Mẫu, hoa văn",
+    "topicSlug": "art",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pause",
+    "ownerKey": "official",
+    "meaningVi": "Tạm dừng",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pave",
+    "ownerKey": "official",
+    "meaningVi": "Lát đường",
+    "topicSlug": "construction",
+    "levelNumber": 5
+  },
+  {
+    "headword": "paw",
+    "ownerKey": "official",
+    "meaningVi": "Chân thú",
+    "topicSlug": "animals",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pawn",
+    "ownerKey": "official",
+    "meaningVi": "Con chốt, cầm đồ",
+    "topicSlug": "games",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pay",
+    "ownerKey": "official",
+    "meaningVi": "Thanh toán, trả tiền",
+    "topicSlug": "finance",
+    "levelNumber": 5
+  },
+  {
+    "headword": "payment",
+    "ownerKey": "official",
+    "meaningVi": "Sự thanh toán",
+    "topicSlug": "finance",
+    "levelNumber": 5
+  },
+  {
+    "headword": "peace",
+    "ownerKey": "official",
+    "meaningVi": "Hòa bình, sự bình yên",
+    "topicSlug": "society",
+    "levelNumber": 5
+  },
+  {
+    "headword": "peaceful",
+    "ownerKey": "official",
+    "meaningVi": "Yên bình",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "peach",
+    "ownerKey": "official",
+    "meaningVi": "Quả đào",
+    "topicSlug": "food",
+    "levelNumber": 5
+  },
+  {
+    "headword": "peak",
+    "ownerKey": "official",
+    "meaningVi": "Đỉnh, cao điểm",
+    "topicSlug": "geography",
+    "levelNumber": 5
+  },
+  {
+    "headword": "peanut",
+    "ownerKey": "official",
+    "meaningVi": "Củ lạc, đậu phụng",
+    "topicSlug": "food",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pear",
+    "ownerKey": "official",
+    "meaningVi": "Quả lê",
+    "topicSlug": "food",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pearl",
+    "ownerKey": "official",
+    "meaningVi": "Ngọc trai",
+    "topicSlug": "fashion",
+    "levelNumber": 5
+  },
+  {
+    "headword": "peasant",
+    "ownerKey": "official",
+    "meaningVi": "Nông dân",
+    "topicSlug": "history",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pebble",
+    "ownerKey": "official",
+    "meaningVi": "Đá cuội",
+    "topicSlug": "nature",
+    "levelNumber": 5
+  },
+  {
+    "headword": "peck",
+    "ownerKey": "official",
+    "meaningVi": "Mổ (chim)",
+    "topicSlug": "animals",
+    "levelNumber": 5
+  },
+  {
+    "headword": "peculiar",
+    "ownerKey": "official",
+    "meaningVi": "Kỳ lạ, riêng biệt",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pedal",
+    "ownerKey": "official",
+    "meaningVi": "Bàn đạp",
+    "topicSlug": "sports",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pedestrian",
+    "ownerKey": "official",
+    "meaningVi": "Người đi bộ",
+    "topicSlug": "traffic",
+    "levelNumber": 5
+  },
+  {
+    "headword": "peel",
+    "ownerKey": "official",
+    "meaningVi": "Vỏ, gọt vỏ",
+    "topicSlug": "cooking",
+    "levelNumber": 5
+  },
+  {
+    "headword": "peer",
+    "ownerKey": "official",
+    "meaningVi": "Người cùng địa vị, nhìn chăm chú",
+    "topicSlug": "society",
+    "levelNumber": 5
+  },
+  {
+    "headword": "peg",
+    "ownerKey": "official",
+    "meaningVi": "Cái cọc, cái kẹp",
+    "topicSlug": "general",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pen",
+    "ownerKey": "official",
+    "meaningVi": "Bút mực",
+    "topicSlug": "education",
+    "levelNumber": 5
+  },
+  {
+    "headword": "penalty",
+    "ownerKey": "official",
+    "meaningVi": "Hình phạt, quả phạt đền",
+    "topicSlug": "sports",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pencil",
+    "ownerKey": "official",
+    "meaningVi": "Bút chì",
+    "topicSlug": "education",
+    "levelNumber": 5
+  },
+  {
+    "headword": "pendant",
+    "ownerKey": "official",
+    "meaningVi": "Mặt dây chuyền",
+    "topicSlug": "fashion",
+    "levelNumber": 5
+  },
+  {
+    "headword": "penetrate",
+    "ownerKey": "official",
+    "meaningVi": "Thâm nhập, xuyên qua",
+    "topicSlug": "science",
+    "levelNumber": 5
+  }
+]
