@@ -94,7 +94,7 @@ describe('GET /api/content (US-01)', () => {
     expect(res.body.vocabulary[0].meaningVi).toBe('trái bóng');
   });
 
-  it('khởi động lại: bổ sung khóa luật còn thiếu mà không ghi đè giá trị đã chỉnh (BR24)', async () => {
+  it('AC-06.5 (BR24): khởi động lại bổ sung khóa luật còn thiếu mà không ghi đè giá trị đã chỉnh', async () => {
     await prisma.gameConfig.update({ where: { id: (await prisma.gameConfig.findFirstOrThrow()).id }, data: { rules: { hearts: { max: 9 } } } });
     const { GameConfigService } = await import('../src/game-config/game-config.service.js');
     await app.get(GameConfigService).ensureDefaults();
@@ -102,6 +102,14 @@ describe('GET /api/content (US-01)', () => {
     expect(rules.hearts.max).toBe(9);
     expect(rules.hearts.lossPerMiss).toBe(0.5);
     expect(rules.pace).toBeDefined();
+  });
+
+  it('AC-11.6: database không dùng được thì /api/content trả 503 (game dùng bản cache), không phải 500; có lại thì trả bình thường', async () => {
+    const spy = vi.spyOn(prisma.topic, 'findMany').mockRejectedValue(new Error('connect ECONNREFUSED'));
+    const res = await request(app.getHttpServer()).get('/api/content').expect(503);
+    expect(res.body.error.code).toBe('db_unavailable');
+    spy.mockRestore();
+    await request(app.getHttpServer()).get('/api/content').expect(200);
   });
 
   describe('CORS cho game ở domain khác', () => {

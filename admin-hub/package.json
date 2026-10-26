@@ -14,6 +14,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "prisma migrate deploy && node dist/main",
+    "admin:reset-totp": "node dist/cli/reset-totp.js",
     "lint": "oxlint --type-aware src/ test/",
     "test": "vitest run",
     "test:watch": "vitest",

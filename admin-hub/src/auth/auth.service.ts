@@ -93,6 +93,25 @@ export class AuthService {
     return { otpauthUrl, secret: secret.base32, qr: await QRCode.toDataURL(otpauthUrl) };
   }
 
+  /**
+   * AC-03.14 (A2, BR42): đổi sang điện thoại mới. Chỉ chạy được bằng lệnh trong container (admin:reset-totp), không có đường HTTP.
+   * Bí mật cũ bị thay nên mã của điện thoại cũ hết dùng được; mọi phiên đăng nhập đang mở bị thu hồi.
+   */
+  async resetTotp(username?: string) {
+    const admins = await this.prisma.adminUser.findMany({ where: { activated: true, ...(username ? { username } : {}) } });
+    if (admins.length === 0) throw new NotFoundException('Không có tài khoản admin nào đã kích hoạt');
+    if (admins.length > 1) throw new HttpException('Có nhiều tài khoản, hãy chỉ định tên đăng nhập', HttpStatus.UNPROCESSABLE_ENTITY);
+    const admin = admins[0];
+    const secret = this.totp.newSecret();
+    await this.prisma.adminUser.update({
+      where: { id: admin.id },
+      data: { totpSecretEnc: new Uint8Array(this.crypto.encrypt(Buffer.from(secret.base32))), lastTotpStep: null },
+    });
+    await this.sessions.revokeAll(admin.id);
+    const otpauthUrl = this.totp.uri(secret.base32, admin.username);
+    return { username: admin.username, otpauthUrl, secret: secret.base32 };
+  }
+
   async setupConfirm(ipKey: string, input: { username: string; code: string }, ip: string, userAgent?: string) {
     if (!(await this.needsSetup())) throw new NotFoundException();
     await this.assertNotLocked(ipKey);

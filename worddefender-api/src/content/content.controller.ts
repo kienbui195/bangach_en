@@ -1,4 +1,4 @@
-import { Controller, Get, Header } from '@nestjs/common';
+import { Controller, Get, Header, HttpException, HttpStatus } from '@nestjs/common';
 import { ContentService } from './content.service.js';
 
 @Controller('api')
@@ -11,7 +11,12 @@ export class ContentController {
    */
   @Get('content')
   @Header('Cache-Control', 'no-cache')
-  get() {
-    return this.content.build();
+  async get() {
+    try {
+      return await this.content.build();
+    } catch {
+      // AC-11.6: database tạm thời không dùng được thì báo 503 (game dùng bản cache), không phải 500.
+      throw new HttpException({ error: { code: 'db_unavailable', message: 'Máy chủ dữ liệu tạm thời không sẵn sàng' } }, HttpStatus.SERVICE_UNAVAILABLE);
+    }
   }
 }

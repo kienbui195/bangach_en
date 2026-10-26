@@ -204,6 +204,26 @@ describe('Đăng nhập admin (US-03)', () => {
       expect(await prisma.session.count({ where: { ip: '4.4.4.4' } })).toBe(0);
     });
 
+    it('AC-03.14 (A2, BR42): reset-totp đổi bí mật: mã điện thoại cũ hết dùng, mã mới đăng nhập được, phiên đang mở bị thu hồi; không có đường HTTP', async () => {
+      const { secret: oldSecret, cookie } = await setupAdmin();
+      await request(server()).get('/auth/me').set('Cookie', cookieHeader(cookie)).expect(200);
+      clock.advance(61_000);
+      const res = await auth.resetTotp();
+      expect(res.secret).not.toBe(oldSecret);
+      expect(res.otpauthUrl).toContain('otpauth://totp/');
+      await request(server()).get('/auth/me').set('Cookie', cookieHeader(cookie)).expect(401); // mọi phiên bị đăng xuất
+      const step1 = await post('/auth/login', { username: 'chungcake69', password: PW }, ipH('7.7.7.7')).expect(200);
+      await post('/auth/totp', { challenge: step1.body.challenge, code: code(oldSecret, clock.now()) }, ipH('7.7.7.7')).expect(401);
+      await post('/auth/totp', { challenge: step1.body.challenge, code: code(res.secret, clock.now()) }, ipH('7.7.7.7')).expect(200);
+      await post('/auth/reset-totp', {}).expect(404);
+    });
+
+    it('reset-totp báo lỗi rõ khi chưa có tài khoản hoặc có nhiều tài khoản mà không chỉ định tên', async () => {
+      await expect(auth.resetTotp()).rejects.toThrow('Không có tài khoản');
+      await setupAdmin();
+      await expect(auth.resetTotp('khong-co')).rejects.toThrow('Không có tài khoản');
+    });
+
     it('AC-03.9: mã vừa dùng không dùng lại được trong cùng chu kỳ; mã chu kỳ sau thì được', async () => {
       const { secret } = await setupAdmin();
       clock.advance(31_000);
