@@ -3,14 +3,13 @@ import { GAME_STAGES } from '../data/stages';
 import { DifficultyLevel, LevelConfig, StageConfig, WordItem } from '../types/game';
 
 /**
- * Nội dung và luật chơi từ CMS (Strapi). Chưa cấu hình VITE_CMS_URL hoặc CMS lỗi thì game dùng
+ * Nội dung và luật chơi từ máy chủ WordDefender (GET /api/content, một lần gọi). Chưa cấu hình VITE_CMS_URL hoặc máy chủ lỗi thì game dùng
  * dữ liệu có sẵn trong code (data/stages.ts, config/gameRules.ts). Bản tải gần nhất lưu ở localStorage:
  * có cache thì áp dụng ngay và làm mới nền cho lần mở sau, chưa có cache thì chờ tối đa FETCH_TIMEOUT_MS.
  */
 const CMS_URL = ((import.meta.env.VITE_CMS_URL as string | undefined) ?? '').replace(/\/$/, '');
 const CACHE_KEY = 'wd_remote_content';
 const FETCH_TIMEOUT_MS = 4000;
-const PAGE_SIZE = 100;
 
 interface CmsTopic {
   slug: string;
@@ -63,15 +62,6 @@ const getJson = async (path: string) => {
   }
 };
 
-const getAll = async <T,>(path: string): Promise<T[]> => {
-  const out: T[] = [];
-  for (let page = 1; ; page++) {
-    const json = await getJson(`${path}${path.includes('?') ? '&' : '?'}pagination[page]=${page}&pagination[pageSize]=${PAGE_SIZE}`);
-    out.push(...(json.data as T[]));
-    if (page >= (json.meta?.pagination?.pageCount ?? 1)) return out;
-  }
-};
-
 const toWord = (v: CmsVocabulary): WordItem => ({
   id: v.headword,
   word: v.displayForm || v.headword,
@@ -80,7 +70,7 @@ const toWord = (v: CmsVocabulary): WordItem => ({
   partOfSpeech: v.partOfSpeech,
   example: v.example,
   category: v.category ?? '',
-  // Strapi trả đường dẫn tương đối khi lưu file trên chính máy chủ CMS
+  // Máy chủ trả đường dẫn tương đối (/uploads/...) khi lưu file trên chính nó
   audioUrl: v.audio?.url ? (v.audio.url.startsWith('http') ? v.audio.url : `${CMS_URL}${v.audio.url}`) : undefined,
 });
 
@@ -155,12 +145,8 @@ const readCache = (): RemoteContent | null => {
 };
 
 const fetchRemote = async (): Promise<RemoteContent> => {
-  const [config, topics, vocabulary] = await Promise.all([
-    getJson('/api/game-config'),
-    getAll<CmsTopic>('/api/topics?populate[levels][sort]=levelNumber&sort=order'),
-    getAll<CmsVocabulary>('/api/vocabularies?filters[ownerKey][$eq]=official&populate=audio&sort[0]=levelNumber&sort[1]=orderIndex'),
-  ]);
-  const content: RemoteContent = { rules: config?.data?.rules ?? null, stages: buildStages(topics, vocabulary) };
+  const data = (await getJson('/api/content')) as { rules?: Partial<GameRules> | null; topics: CmsTopic[]; vocabulary: CmsVocabulary[] };
+  const content: RemoteContent = { rules: data.rules ?? null, stages: buildStages(data.topics, data.vocabulary) };
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(content));
   } catch {

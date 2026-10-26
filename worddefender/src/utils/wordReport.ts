@@ -1,13 +1,12 @@
 import { WordItem } from '../types/game';
 
 /**
- * Gửi báo lỗi một từ lên CMS. Người chơi chỉ tạo được bản ghi chờ duyệt (collection
- * word-report); nội dung thật chỉ đổi khi admin duyệt trong dashboard, lúc đó lifecycle
- * bên CMS mới ghi đè vào từ vựng.
+ * Gửi báo lỗi một từ lên máy chủ (POST /api/word-reports, một yêu cầu, kèm file đọc nếu có).
+ * Người chơi chỉ tạo được bản ghi chờ duyệt; nội dung thật chỉ đổi khi admin duyệt trong dashboard.
  */
 const CMS_URL = ((import.meta.env.VITE_CMS_URL as string | undefined) ?? '').replace(/\/$/, '');
 const KEY_REPORTER = 'wd_reporter_key';
-const MAX_AUDIO_BYTES = 2 * 1024 * 1024; // khớp sizeLimit của CMS
+const MAX_AUDIO_BYTES = 2 * 1024 * 1024; // khớp giới hạn của máy chủ
 
 export type ReportField = 'headword' | 'displayForm' | 'meaningVi' | 'phonetic' | 'example' | 'audio';
 
@@ -52,17 +51,9 @@ export const currentValueOf = (word: WordItem, field: ReportField): string => {
   }
 };
 
-const uploadAudio = async (file: File): Promise<number> => {
+const checkAudio = (file: File) => {
   if (!file.type.startsWith('audio/')) throw new Error('Chỉ nhận file âm thanh.');
   if (file.size > MAX_AUDIO_BYTES) throw new Error('File quá 2MB, hãy thu ngắn lại.');
-  const form = new FormData();
-  form.append('files', file);
-  const res = await fetch(`${CMS_URL}/api/upload`, { method: 'POST', body: form });
-  if (!res.ok) throw new Error(`Tải file lên thất bại (HTTP ${res.status})`);
-  const uploaded = await res.json();
-  const id = Array.isArray(uploaded) ? uploaded[0]?.id : uploaded?.id;
-  if (!id) throw new Error('Tải file lên thất bại: máy chủ không trả về file.');
-  return id;
 };
 
 export interface ReportInput {
@@ -78,21 +69,18 @@ export const sendWordReport = async ({ word, field, suggestedValue, audioFile, n
   if (field === 'audio' && !audioFile) throw new Error('Hãy chọn file âm thanh trước khi gửi.');
   if (field !== 'audio' && !suggestedValue?.trim()) throw new Error('Hãy nhập nội dung đề xuất.');
 
-  const data: Record<string, unknown> = {
-    headword: word.id.toLowerCase(),
-    field,
-    currentValue: currentValueOf(word, field),
-    suggestedValue: field === 'audio' ? null : suggestedValue?.trim(),
-    note: note?.trim() || null,
-    reporterKey: reporterKey(),
-  };
-  if (audioFile) data.suggestedAudio = await uploadAudio(audioFile);
+  if (audioFile) checkAudio(audioFile);
 
-  const res = await fetch(`${CMS_URL}/api/word-reports`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ data }),
-  });
+  const form = new FormData();
+  form.append('headword', word.id.toLowerCase());
+  form.append('field', field);
+  form.append('currentValue', currentValueOf(word, field));
+  if (field !== 'audio') form.append('suggestedValue', suggestedValue?.trim() ?? '');
+  if (note?.trim()) form.append('note', note.trim());
+  form.append('reporterKey', reporterKey());
+  if (audioFile) form.append('file', audioFile);
+
+  const res = await fetch(`${CMS_URL}/api/word-reports`, { method: 'POST', body: form });
   if (!res.ok) {
     const body = await res.text();
     throw new Error(`Gửi thất bại (HTTP ${res.status}). ${body.slice(0, 120)}`);
