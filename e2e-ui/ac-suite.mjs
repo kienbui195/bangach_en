@@ -16,6 +16,9 @@ const HUB = 'http://127.0.0.1:3200', HUB_GAME = 'http://127.0.0.1:3300', HUB_TOK
 const VPS = 'root@103.77.209.156';
 const groups = new Set(process.argv.slice(2).length ? process.argv.slice(2) : ['game', 'ops', 'vps', 'hub']);
 const results = [];
+// Ảnh chụp từng bước (UI/UX): chỉ chụp khi đặt E2E_STEP_SHOTS_DIR, ngoài ra không làm gì.
+const SHOTS = process.env.E2E_STEP_SHOTS_DIR;
+const shot = async (page, name) => { if (SHOTS) { await (await import('node:fs/promises')).mkdir(SHOTS, { recursive: true }); await page.screenshot({ path: `${SHOTS}/${name}.png`, fullPage: false }); } };
 const rec = (ac, ok, note) => { results.push({ ac, status: ok ? 'PASS' : 'FAIL', note }); console.log(`${ok ? 'PASS' : 'FAIL'}  ${ac}  ${note}`); };
 const sh = (cmd, args, opt = {}) => execFileSync(cmd, args, { encoding: 'utf8', ...opt }).trim();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -28,39 +31,40 @@ const browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome'
 
 // ---------------------------------------------------------------- nhóm game: giao diện game ở trình duyệt thật
 async function gameGroup() {
-  const open = async (ctx, setup) => {
+  const open = async (ctx, setup, label) => {
     const page = await ctx.newPage();
     const errs = []; page.on('pageerror', (e) => errs.push(e.message));
     if (setup) await page.route('**/api/content', setup);
     const t0 = Date.now();
     await page.goto(WEB, { waitUntil: 'commit' });
     await page.waitForFunction(() => (document.getElementById('root')?.children.length ?? 0) > 0, null, { timeout: 15000 });
+    if (label) await shot(page, label);
     return { page, errs, secs: (Date.now() - t0) / 1000, cache: await page.evaluate(() => { const j = JSON.parse(localStorage.getItem('wd_remote_content') || 'null'); return j && { stages: j.stages.length, levels: j.stages[0]?.levels.length }; }) };
   };
   // AC-01.4: chưa có cache → chờ tối đa 4 giây rồi dùng dữ liệu có sẵn
   let ctx = await browser.newContext();
-  let r = await open(ctx, async (route) => { await sleep(2000); await route.continue(); });
+  let r = await open(ctx, async (route) => { await sleep(2000); await route.continue(); }, '01-game-may-chu-cham-2s');
   rec('AC-01.4a', r.secs >= 1.8 && r.secs < 4 && r.cache?.levels === 15, `máy chủ trả sau 2 giây: giao diện hiện sau ${r.secs.toFixed(1)}s, nội dung máy chủ (${JSON.stringify(r.cache)})`);
   await ctx.close();
   ctx = await browser.newContext();
-  r = await open(ctx, async (route) => { await sleep(7000); await route.continue().catch(() => {}); });
+  r = await open(ctx, async (route) => { await sleep(7000); await route.continue().catch(() => {}); }, '02-game-may-chu-cham-7s-dung-du-lieu-co-san');
   rec('AC-01.4b', r.secs >= 3.8 && r.secs < 5.5 && r.cache === null && r.errs.length === 0, `máy chủ trả sau 7 giây: giao diện hiện sau ${r.secs.toFixed(1)}s bằng dữ liệu có sẵn, không lỗi trang, chưa có cache`);
   await ctx.close();
   // AC-01.5: máy chủ tắt (có cache rồi không cache)
   ctx = await browser.newContext();
   await (await open(ctx)).page.close(); // nạp bình thường để có cache
-  r = await open(ctx, (route) => route.abort());
+  r = await open(ctx, (route) => route.abort(), '03-game-may-chu-tat-co-cache');
   rec('AC-01.5a', r.secs < 3 && r.errs.length === 0 && r.cache?.levels === 15, `máy chủ tắt, có cache: giao diện hiện sau ${r.secs.toFixed(1)}s dùng cache (${JSON.stringify(r.cache)}), không lỗi trang`);
   await ctx.close();
   ctx = await browser.newContext();
-  r = await open(ctx, (route) => route.abort());
+  r = await open(ctx, (route) => route.abort(), '04-game-may-chu-tat-khong-cache');
   rec('AC-01.5b', r.secs < 5.5 && r.errs.length === 0, `máy chủ tắt, không cache: giao diện hiện sau ${r.secs.toFixed(1)}s bằng dữ liệu có sẵn, không lỗi trang`);
   await ctx.close();
   // AC-01.6: chặng không có màn bị bỏ, chặng khác vẫn chơi được
   ctx = await browser.newContext();
   const real = JSON.parse((await http(`${API}/api/content`)).text);
   real.topics.push({ slug: 'rong', title: 'Chặng rỗng', description: '', themeColor: '#000000', order: 2, levels: [] });
-  r = await open(ctx, (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(real) }));
+  r = await open(ctx, (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(real) }), '05-game-chang-khong-man-bi-bo');
   const titles = await r.page.evaluate(() => JSON.parse(localStorage.getItem('wd_remote_content')).stages.map((s) => s.title));
   rec('AC-01.6', titles.length === 1 && !titles.join().includes('rỗng'), `gói có thêm một chặng không màn: game còn ${titles.length} chặng (${titles[0]?.slice(0, 40)}...)`);
   await ctx.close();
@@ -171,13 +175,35 @@ async function hubGroup() {
   await page.goto(`${HUB}/g/worddefender`);
   await page.getByRole('alert').waitFor();
   const alert = await page.getByRole('alert').innerText();
+  await shot(page, '10-hub-canh-bao-hop-dong-sai-phien-ban');
   rec('AC-04.10 (E4)', /phiên bản 2/.test(alert) && (await page.locator('table').count()) === 0, `cảnh báo hiện: "${alert.slice(0, 70)}..."; số bảng dựng: ${await page.locator('table').count()}`);
   await page.unroute('**/api/games/worddefender/admin/meta');
   // AC-08.5: trang trạng thái không có nút bật/tắt/khởi động lại
   await page.goto(`${HUB}/`);
   await page.getByText('Đang chạy').first().waitFor();
   const buttons = (await page.getByRole('button').allInnerTexts()).join(' | ');
+  await shot(page, '11-hub-trang-thai-khong-co-nut-bat-tat');
   rec('AC-08.5 (giao diện)', !/Bật|Tắt|Khởi động|Dừng|Restart|Start|Stop/i.test(buttons.replace('Đăng xuất', '')), `các nút trên trang Trạng thái: ${buttons}`);
+  // Giao diện Sao lưu/Khôi phục (tính năng ngoài danh sách AC ban đầu): chụp từng bước, kiểm dữ liệu quay lại đúng
+  const gameApi = (method, path, body) => fetch(`${HUB_GAME}/admin-api${path}`, { method, headers: { Authorization: `Bearer ${HUB_TOKEN}`, 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined }).then(async (r) => ({ status: r.status, json: await r.json().catch(() => null) }));
+  for (const [h, m] of [['ball', 'quả bóng'], ['desk', 'cái bàn'], ['lamp', 'cái đèn']]) await gameApi('POST', '/vocabularies', { headword: h, kind: 'word', meaningVi: m });
+  const dialogs = []; page.on('dialog', async (d) => { dialogs.push(d.message()); await d.accept(); });
+  await page.goto(`${HUB}/g/worddefender`);
+  await page.getByRole('link', { name: 'Sao lưu' }).click();
+  await page.getByRole('button', { name: 'Sao lưu ngay' }).waitFor();
+  await shot(page, '20-hub-sao-luu-trang-thai-ban-dau');
+  await page.getByRole('button', { name: 'Sao lưu ngay' }).click();
+  await page.getByText('Đã thực hiện: Sao lưu ngay').waitFor();
+  await shot(page, '21-hub-sao-luu-ngay-xong');
+  const desk = (await gameApi('GET', '/vocabularies?q=desk')).json.items[0];
+  await gameApi('DELETE', `/vocabularies/${desk.id}`);
+  const afterDelete = (await gameApi('GET', '/vocabularies?pageSize=100')).json.items.map((x) => x.headword).sort().join(',');
+  await page.getByRole('button', { name: 'Khôi phục' }).first().click();
+  await page.getByText('Đã thực hiện: Khôi phục').waitFor();
+  await shot(page, '22-hub-khoi-phuc-xong');
+  const afterRestore = (await gameApi('GET', '/vocabularies?pageSize=100')).json.items.map((x) => x.headword).sort().join(',');
+  const preRestore = (await page.getByRole('cell', { name: /pre-restore/ }).count()) > 0;
+  rec('EXTRA-BACKUP-UI', afterDelete === 'ball,lamp' && afterRestore === 'ball,desk,lamp' && preRestore && /TOÀN BỘ/.test(dialogs[0] ?? ''), `Sao lưu ngay, xóa "desk" (${afterDelete}), bấm Khôi phục (hộp xác nhận hiện), dữ liệu về ${afterRestore}; có bản pre-restore: ${preRestore}`);
   // AC-08.2: dừng game, thẻ tự chuyển "Không phản hồi" không cần tải lại
   const pid = readFileSync('/tmp/hub-dev/wd.pid', 'utf8').trim();
   process.kill(Number(pid));
