@@ -1,6 +1,6 @@
 # Issue tracker: Local Markdown
 
-Issues and specs for this repo live as markdown files in `.scratch/`.
+Issues and specs live as markdown files in `~/Documents/MyDocs/Games/WordDefender/.scratch/` (outside the repo; paths below are relative to that folder).
 
 ## Conventions
 
