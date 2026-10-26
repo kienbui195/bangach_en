@@ -21,6 +21,8 @@ export interface HubEnv {
   gameTimeoutMs: number;
   /** Các phiên bản hợp đồng quản trị mà dashboard hiểu (BR33). */
   supportedContracts: number[];
+  /** Thư mục chứa file khai báo game (<khóa>.json); bỏ trống thì không tự nhận game. */
+  gamesDir?: string;
 }
 
 const num = (v: string | undefined, def: number) => (v === undefined || v === '' ? def : Number(v));
@@ -60,6 +62,7 @@ export function readEnv(env: Env): HubEnv {
     challengeMs: 5 * 60_000,
     gameTimeoutMs: num(env.GAME_TIMEOUT_MS, 3000),
     supportedContracts: [1],
+    gamesDir: env.HUB_GAMES_DIR || undefined,
   };
 }
 

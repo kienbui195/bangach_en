@@ -1,4 +1,6 @@
 import { ConflictException, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { HUB_ENV, type HubEnv } from '../config/env.js';
 import { CryptoService } from '../crypto/crypto.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -29,8 +31,40 @@ export class GamesService {
     @Inject(HUB_ENV) private readonly env: HubEnv,
   ) {}
 
+  /**
+   * Game tự khai báo bằng file `<khóa>.json` ({ key, name, baseUrl, token }) trong HUB_GAMES_DIR.
+   * Game chưa có thì thêm, game có mà địa chỉ/tên/token đổi thì cập nhật; file lỗi hoặc game chưa trả lời thì bỏ qua,
+   * lần quét sau thử lại. Không bao giờ xóa game vì file biến mất (gỡ bằng thao tác gỡ của admin).
+   */
+  async syncManifests(): Promise<void> {
+    const dir = this.env.gamesDir;
+    if (!dir || !existsSync(dir)) return;
+    for (const file of readdirSync(dir).filter((f) => f.endsWith('.json'))) {
+      try {
+        const m = JSON.parse(readFileSync(join(dir, file), 'utf8')) as { key?: string; name?: string; baseUrl?: string; token?: string };
+        const gameKey = String(m.key ?? '').trim();
+        const name = String(m.name ?? '').trim();
+        const baseUrl = String(m.baseUrl ?? '').trim().replace(/\/$/, '');
+        const token = String(m.token ?? '');
+        if (!KEY.test(gameKey) || !name || name.length > 100 || !BASE_URL.test(baseUrl) || token.length < 32) {
+          console.warn(`Bỏ qua file khai báo game không hợp lệ: ${file}`);
+          continue;
+        }
+        const row = await this.prisma.game.findUnique({ where: { gameKey } });
+        if (row && row.name === name && row.baseUrl === baseUrl && this.crypto.decrypt(row.tokenEnc).toString() === token) continue;
+        const contractVersion = await this.probe(baseUrl, token);
+        const data = { name, baseUrl, tokenEnc: new Uint8Array(this.crypto.encrypt(Buffer.from(token))), contractVersion };
+        if (row) await this.prisma.game.update({ where: { id: row.id }, data });
+        else await this.prisma.game.create({ data: { gameKey, ...data } });
+      } catch (e) {
+        console.warn(`Chưa nhận được game khai báo ở ${file}: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+  }
+
   /** Danh sách game. Không bao giờ trả token (BR34). */
   async list() {
+    await this.syncManifests();
     const games = await this.prisma.game.findMany({ orderBy: { id: 'asc' } });
     return games.map((g) => ({ key: g.gameKey, name: g.name, baseUrl: g.baseUrl, contractVersion: g.contractVersion }));
   }
@@ -95,6 +129,7 @@ export class GamesService {
 
   /** Trạng thái mọi game, gọi song song, mỗi game tối đa `gameTimeoutMs` (BR30). */
   async statusAll(): Promise<{ hub: { db: string }; games: GameStatus[] }> {
+    await this.syncManifests();
     const games = await this.prisma.game.findMany({ orderBy: { id: 'asc' } });
     const results = await Promise.all(
       games.map(async (g): Promise<GameStatus> => {

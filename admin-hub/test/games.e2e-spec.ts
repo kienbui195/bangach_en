@@ -1,6 +1,9 @@
 import { Test } from '@nestjs/testing';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { randomBytes } from 'node:crypto';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import request from 'supertest';
@@ -73,6 +76,8 @@ describe('Nối game và chuyển lệnh (US-04, 08, 09)', () => {
   let env: HubEnv;
   let cookie: string;
   const game = new FakeGame();
+  const gamesDir = mkdtempSync(join(tmpdir(), 'hub-games-'));
+  const manifest = (name: string, body: object) => writeFileSync(join(gamesDir, name), JSON.stringify(body));
 
   const server = () => app.getHttpServer();
   const get = (path: string) => request(server()).get(path).set('Cookie', cookie);
@@ -97,6 +102,7 @@ describe('Nối game và chuyển lệnh (US-04, 08, 09)', () => {
       challengeMs: 300_000,
       gameTimeoutMs: 400,
       supportedContracts: [1],
+      gamesDir,
     };
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(HUB_ENV).useValue(env).compile();
     app = moduleRef.createNestApplication<NestExpressApplication>({ bodyParser: false });
@@ -111,6 +117,8 @@ describe('Nối game và chuyển lệnh (US-04, 08, 09)', () => {
     game.delayMs = 0;
     game.dbUp = true;
     game.seen = [];
+    rmSync(gamesDir, { recursive: true, force: true });
+    mkdirSync(gamesDir);
     await prisma.auditLog.deleteMany();
     await prisma.game.deleteMany();
     await prisma.session.deleteMany();
@@ -127,6 +135,42 @@ describe('Nối game và chuyển lệnh (US-04, 08, 09)', () => {
     await prisma.adminUser.deleteMany();
     await app.close();
     await game.stop();
+    rmSync(gamesDir, { recursive: true, force: true });
+  });
+
+  describe('game tự khai báo bằng file', () => {
+    it('thả file <khóa>.json vào thư mục thì game tự hiện trong danh sách, không lộ token', async () => {
+      manifest('fake.json', { key: 'fake', name: 'Fake', baseUrl: game.baseUrl, token: TOKEN });
+      const list = await get('/games').expect(200);
+      expect(list.body).toEqual([{ key: 'fake', name: 'Fake', baseUrl: game.baseUrl, contractVersion: 1 }]);
+      expect(JSON.stringify(list.body)).not.toContain(TOKEN);
+      const row = await prisma.game.findFirstOrThrow();
+      expect(Buffer.from(row.tokenEnc).includes(Buffer.from(TOKEN))).toBe(false);
+    });
+
+    it('đổi token trong file thì lần sau dùng token mới; quét lại khi không đổi thì không gọi game nữa', async () => {
+      manifest('fake.json', { key: 'fake', name: 'Fake', baseUrl: game.baseUrl, token: TOKEN });
+      await get('/games').expect(200);
+      game.seen = [];
+      await get('/games').expect(200);
+      expect(game.seen).toHaveLength(0);
+      game.token = TOKEN2;
+      manifest('fake.json', { key: 'fake', name: 'Fake 2', baseUrl: game.baseUrl, token: TOKEN2 });
+      const list = await get('/games').expect(200);
+      expect(list.body[0].name).toBe('Fake 2');
+      expect((await get('/games/status')).body.games[0].state).toBe('ok');
+    });
+
+    it('file sai token, file hỏng, hoặc game chưa trả lời thì bỏ qua, không làm hỏng danh sách; file biến mất không xóa game', async () => {
+      manifest('bad.json', { key: 'bad', name: 'Bad', baseUrl: game.baseUrl, token: 'c'.repeat(40) });
+      writeFileSync(join(gamesDir, 'broken.json'), '{không phải json');
+      manifest('short.json', { key: 'short', name: 'Short', baseUrl: game.baseUrl, token: 'ngan' });
+      expect((await get('/games').expect(200)).body).toEqual([]);
+      manifest('fake.json', { key: 'fake', name: 'Fake', baseUrl: game.baseUrl, token: TOKEN });
+      expect((await get('/games').expect(200)).body).toHaveLength(1);
+      rmSync(join(gamesDir, 'fake.json'));
+      expect((await get('/games').expect(200)).body).toHaveLength(1);
+    });
   });
 
   describe('đăng ký game (US-09)', () => {

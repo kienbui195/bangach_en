@@ -13,6 +13,7 @@ services:
       COOKIE_SECURE: "true"
       HUB_MASTER_KEY_FILE: /run/hub/master-key
       HUB_SETUP_TOKEN_FILE: /run/hub/setup-token
+      HUB_GAMES_DIR: /run/hub/games   # mỗi game tự khai báo bằng file <khóa>.json (key, name, baseUrl, token)
     # Caddy chạy trên máy chủ nên cần một cổng chỉ nghe ở 127.0.0.1.
     ports:
       - "127.0.0.1:3201:3200"
