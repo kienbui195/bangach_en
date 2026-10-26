@@ -1,0 +1,92 @@
+// Lược đồ database hub (dashboard chung). Thiết kế: tài liệu 03-so-do.html, mục ERD hub.
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum AuditStatus {
+  started
+  succeeded
+  failed
+}
+
+/// Tài khoản admin. Chỉ kích hoạt khi mã Authenticator đầu tiên nhập đúng (BR45).
+model AdminUser {
+  id            Int        @id @default(autoincrement())
+  username      String     @unique @db.VarChar(64)
+  passwordHash  String     @map("password_hash") @db.VarChar(255)
+  /// Bí mật TOTP mã hóa AES-256-GCM (iv + tag + ciphertext), khóa master nằm ngoài DB (BR42).
+  totpSecretEnc Bytes      @map("totp_secret_enc")
+  /// Bước 30 giây của mã TOTP đã dùng gần nhất; mỗi mã chỉ dùng một lần.
+  lastTotpStep  BigInt?    @map("last_totp_step")
+  activated     Boolean    @default(false)
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  sessions      Session[]
+  audits        AuditLog[]
+
+  @@map("admin_users")
+}
+
+/// Phiên đăng nhập. `id` là băm SHA-256 của mã phiên trong cookie (không lưu mã gốc).
+model Session {
+  id         String    @id @db.Char(64)
+  adminId    Int       @map("admin_id")
+  admin      AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  lastSeenAt DateTime  @default(now()) @map("last_seen_at")
+  ip         String?   @db.VarChar(64)
+  userAgent  String?   @map("user_agent") @db.VarChar(255)
+
+  @@index([adminId])
+  @@map("sessions")
+}
+
+/// Đếm thử sai theo IP (IPv6 gộp /64). Không có khóa toàn cục (BR10).
+model LoginAttempt {
+  ipKey           String    @id @map("ip_key") @db.VarChar(64)
+  failCount       Int       @default(0) @map("fail_count")
+  windowStartedAt DateTime  @map("window_started_at")
+  lockedUntil     DateTime? @map("locked_until")
+
+  @@map("login_attempts")
+}
+
+/// Game đã nối vào dashboard.
+model Game {
+  id              Int        @id @default(autoincrement())
+  gameKey         String     @unique @map("game_key") @db.VarChar(50)
+  name            String     @db.VarChar(100)
+  /// Địa chỉ giao diện quản trị của game trong mạng Docker, ví dụ http://worddefender-api:3100
+  baseUrl         String     @map("base_url") @db.VarChar(255)
+  /// Token dịch vụ, mã hóa AES-256-GCM; không bao giờ hiện lại (BR34).
+  tokenEnc        Bytes      @map("token_enc")
+  contractVersion Int?       @map("contract_version")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+  audits          AuditLog[]
+
+  @@map("games")
+}
+
+/// Nhật ký thao tác. Ghi `started` TRƯỚC khi gọi game; không ghi được thì không thực hiện (BR15).
+model AuditLog {
+  id        Int         @id @default(autoincrement())
+  adminId   Int         @map("admin_id")
+  admin     AdminUser   @relation(fields: [adminId], references: [id])
+  gameId    Int?        @map("game_id")
+  game      Game?       @relation(fields: [gameId], references: [id], onDelete: SetNull)
+  resource  String      @db.VarChar(50)
+  recordId  String?     @map("record_id") @db.VarChar(64)
+  action    String      @db.VarChar(30)
+  status    AuditStatus
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  @@index([adminId, createdAt])
+  @@index([gameId, createdAt])
+  @@map("audit_log")
+}
