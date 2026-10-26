@@ -6,7 +6,9 @@ services:
     image: worddefender-api:latest
     container_name: worddefender-api
     restart: unless-stopped
-    env_file: /srv/secrets/worddefender.db.env
+    env_file:
+      - /srv/secrets/worddefender.db.env
+      - /srv/secrets/worddefender.admin.env   # ADMIN_API_TOKEN=... (token dịch vụ cho dashboard)
     environment:
       PORT: "3000"
     # Caddy chạy trên máy chủ (không nằm trong Docker) nên cần một cổng chỉ nghe ở 127.0.0.1.

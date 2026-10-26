@@ -1,0 +1,30 @@
+# Chạy trên VPS: cần mạng Docker `appnet`, database tạo bằng `vps db-create hub` và thư mục /srv/secrets/hub (chủ uid 1000).
+name: admin-hub
+services:
+  admin-hub:
+    build: .
+    image: admin-hub:latest
+    container_name: admin-hub
+    restart: unless-stopped
+    env_file: /srv/secrets/hub.db.env
+    environment:
+      PORT: "3200"
+      HUB_ORIGIN: "https://admin.baodom.xyz"
+      COOKIE_SECURE: "true"
+      HUB_MASTER_KEY_FILE: /run/hub/master-key
+      HUB_SETUP_TOKEN_FILE: /run/hub/setup-token
+    # Caddy chạy trên máy chủ nên cần một cổng chỉ nghe ở 127.0.0.1.
+    ports:
+      - "127.0.0.1:3201:3200"
+    # Chỉ gắn thư mục riêng của hub, không gắn toàn bộ /srv/secrets.
+    volumes:
+      - /srv/secrets/hub:/run/hub
+    networks: [appnet]
+    mem_limit: 256m
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+networks:
+  appnet:
+    external: true
