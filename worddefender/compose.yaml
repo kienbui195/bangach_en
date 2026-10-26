@@ -1,8 +1,20 @@
+# Chạy trên VPS (/srv/apps/worddefender-web): giao diện game tĩnh, Caddy của máy chủ chuyển domain vào cổng 3102.
+name: worddefender-web
 services:
   web:
     build: .
-    image: worddefender-web:prod
+    image: worddefender-web:latest
     container_name: worddefender-web
     restart: unless-stopped
     ports:
-      - "127.0.0.1:45230:80"
+      - "127.0.0.1:3102:80"
+    networks: [appnet]
+    mem_limit: 64m
+    read_only: true
+    tmpfs: [/tmp, /data, /config]
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: ["no-new-privileges:true"]
+networks:
+  appnet:
+    external: true

@@ -12,6 +12,14 @@ Tác giả: chungcake69. Ví dụ chạy thật: `worddefender-api/` (xem `src/a
 
 Việc của bạn: (A) làm BE game có `/admin-api` đúng hợp đồng, (B) cấp một token, (C) thả một file khai báo `<khóa>.json`. Xong là game hiện trong dashboard.
 
+## 1b. Quy ước tên miền và nơi chạy
+
+Mọi thứ chạy trên VPS, **không để gì ở laptop**. Mỗi game hai domain dưới `baodom.xyz`:
+- **FE (giao diện)**: `<game>.baodom.xyz`, container tĩnh riêng (`/srv/apps/<game>-web`, Caddy chuyển vào `127.0.0.1:<cổng>`).
+- **BE (máy chủ)**: `<game>-server.baodom.xyz`, chỉ chuyển `/api/*` và `/uploads/*`. Đặt `CORS_ORIGINS` của BE đúng domain FE; FE build với `VITE_*_URL` trỏ domain BE.
+- Thêm domain mới: viết `/etc/caddy/sites/<tên>.caddy`, thêm hostname vào `/etc/cloudflared/config.yml`, chạy `cloudflared tunnel route dns vps-chungcake69 <hostname>` trên VPS, rồi `systemctl reload caddy && systemctl restart cloudflared`. Mẫu: `bangach.caddy`, `bangach-server.caddy`.
+- Ví dụ WordDefender: FE `bangach.baodom.xyz` (`/srv/apps/worddefender-web`, cổng 3102), BE `bangach-server.baodom.xyz` (`/srv/apps/worddefender`, cổng 3101).
+
 ## 2. Ba thông số khai báo và cách lấy
 
 File khai báo (JSON, 4 trường):

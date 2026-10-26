@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --legacy-peer-deps
 COPY . .
-ARG VITE_CMS_URL=https://bangach.baodom.xyz
+ARG VITE_CMS_URL=https://bangach-server.baodom.xyz
 ENV VITE_CMS_URL=$VITE_CMS_URL
 RUN npm run build
 
