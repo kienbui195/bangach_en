@@ -72,13 +72,13 @@ Tham chiếu code: `worddefender-api/src/admin/contract.ts` (kiểu dữ liệu)
 3. **Chạy test** `/admin-api` trên MySQL thật: thiếu token → 401; có `X-Forwarded-For` → 401; `meta`/`health` đúng khuôn; validation trả 422 kèm `fields`; import không có `previewToken` thì bị từ chối.
 4. **Sinh token** (chạy trên VPS, **không in ra màn hình hay chat**):
    ```bash
-   ssh root@103.77.209.156 'umask 077; printf "ADMIN_API_TOKEN=%s\n" "$(openssl rand -base64 48 | tr -d "=\n")" > /srv/secrets/<game>.admin.env'
+   ssh_vpsgiare_server 'umask 077; printf "ADMIN_API_TOKEN=%s\n" "$(openssl rand -base64 48 | tr -d "=\n")" > /srv/secrets/<game>.admin.env'
    ```
 5. **compose.yaml** của game (mẫu: `worddefender-api/compose.yaml`): `container_name: <tên>`, `env_file` gồm `/srv/secrets/<game>.db.env` và `/srv/secrets/<game>.admin.env`, `networks: [appnet]` (external), `ports: ["127.0.0.1:<310x>:<cổng>"]` nếu có API công khai, `mem_limit`, `read_only`, `cap_drop: [ALL]`.
 6. **Đưa code lên và chạy**: `rsync` lên `/srv/apps/<game>/` rồi `vps deploy <game>` (`vps restart` KHÔNG nhận image mới).
 7. **Khai báo vào hub** (chạy trên VPS; token đọc ngay trên máy chủ, không đi qua chat):
    ```bash
-   ssh root@103.77.209.156 python3 - <<'EOF'
+   ssh_vpsgiare_server python3 - <<'EOF'
    import json
    key, name, base = "<key>", "<Tên hiển thị>", "http://<container_name>:<cổng>"
    token = [l.split("=",1)[1].strip() for l in open(f"/srv/secrets/<game>.admin.env") if l.startswith("ADMIN_API_TOKEN=")][0]
@@ -115,6 +115,6 @@ Hub ghi cảnh báo ra log: `vps logs admin-hub`. Nguyên nhân thường gặp:
 
 ## 7. Hạ tầng cần biết
 
-- VPS `103.77.209.156` (alias `ssh_vpsgiare_server`), lệnh quản lý `vps` (`source ~/.bashrc`): `status|logs|mem|backup|db-create|db-shell|deploy`.
+- VPS (alias SSH `ssh_vpsgiare_server`), lệnh quản lý `vps` (`source ~/.bashrc`): `status|logs|mem|backup|db-create|db-shell|deploy`.
 - Code trên VPS ở `/srv/apps/<game>`, dữ liệu `/srv/data`, bí mật `/srv/secrets`, sao lưu `/srv/backups`.
 - Mỗi game: một BE riêng, một database riêng trong MySQL dùng chung, không phụ thuộc game khác.
