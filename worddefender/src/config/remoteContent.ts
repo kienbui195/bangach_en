@@ -44,6 +44,12 @@ interface CmsVocabulary {
   example?: string;
   audio?: { url?: string } | null;
 }
+/** Thân trả lời của GET /api/content. */
+interface ContentResponse {
+  rules?: Partial<GameRules> | null;
+  topics: CmsTopic[];
+  vocabulary: CmsVocabulary[];
+}
 interface RemoteContent {
   rules: Partial<GameRules> | null;
   stages: StageConfig[];
@@ -145,7 +151,7 @@ const readCache = (): RemoteContent | null => {
 };
 
 const fetchRemote = async (): Promise<RemoteContent> => {
-  const data = (await getJson('/api/content')) as { rules?: Partial<GameRules> | null; topics: CmsTopic[]; vocabulary: CmsVocabulary[] };
+  const data = (await getJson('/api/content')) as ContentResponse;
   const content: RemoteContent = { rules: data.rules ?? null, stages: buildStages(data.topics, data.vocabulary) };
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(content));

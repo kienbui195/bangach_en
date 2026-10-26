@@ -1,8 +1,9 @@
-import { HttpException, HttpStatus, Injectable, Logger, NotFoundException, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
 import { mkdir, readdir, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { gunzipSync, gzipSync } from 'node:zlib';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { apiError, notFound as notFoundError } from '../errors.js';
 
 export type BackupKind = 'manual' | 'auto' | 'pre-restore';
 
@@ -36,8 +37,8 @@ export interface BackupRow {
 }
 
 export const backupDir = () => process.env.BACKUP_DIR ?? join(process.cwd(), 'backups');
-const bad = (message: string, status = HttpStatus.UNPROCESSABLE_ENTITY, code = 'validation') => new HttpException({ error: { code, message } }, status);
-const notFound = () => new NotFoundException({ error: { code: 'not_found', message: 'Không tìm thấy bản sao lưu' } });
+const bad = (message: string, status = HttpStatus.UNPROCESSABLE_ENTITY, code = 'validation') => apiError(status, code, message);
+const notFound = () => notFoundError('Không tìm thấy bản sao lưu');
 const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
 
 @Injectable()
@@ -65,8 +66,8 @@ export class BackupsService implements OnApplicationBootstrap, OnApplicationShut
   async autoBackup(): Promise<void> {
     const rows = await this.list();
     if (rows.length > 0 && Date.now() - new Date(rows[0].createdAt).getTime() < DAY_MS) return;
-    await this.create('auto');
-    const autos = (await this.list()).filter((r) => r.kind === 'auto');
+    const created = await this.create('auto');
+    const autos = [created, ...rows].filter((r) => r.kind === 'auto').sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     for (const old of autos.slice(KEEP_AUTO)) await this.remove(old.name);
   }
 
@@ -77,13 +78,9 @@ export class BackupsService implements OnApplicationBootstrap, OnApplicationShut
 
   private async snapshot(kind: BackupKind): Promise<Snapshot> {
     const p = this.prisma as unknown as Record<Table, { findMany(a: unknown): Promise<Record<string, unknown>[]> }>;
-    // Đọc trong một giao dịch để các bảng nhất quán với nhau.
-    const tables = await this.prisma.$transaction(async (tx) => {
-      const t = tx as unknown as typeof p;
-      const out = {} as Snapshot['tables'];
-      for (const name of TABLES) out[name] = await t[name].findMany({ orderBy: { id: 'asc' } });
-      return out;
-    });
+    // Một lô giao dịch: các bảng đọc cùng một thời điểm (nhất quán) và gửi cùng lúc.
+    const results = (await this.prisma.$transaction(TABLES.map((name) => p[name].findMany({ orderBy: { id: 'asc' } }) as never))) as Record<string, unknown>[][];
+    const tables = Object.fromEntries(TABLES.map((name, i) => [name, results[i]])) as Snapshot['tables'];
     return { format: FORMAT, game: 'worddefender', createdAt: new Date().toISOString(), kind, tables };
   }
 
@@ -142,14 +139,8 @@ export class BackupsService implements OnApplicationBootstrap, OnApplicationShut
     } catch {
       /* chưa có thư mục = chưa có bản nào */
     }
-    const rows: BackupRow[] = [];
-    for (const n of names) {
-      try {
-        rows.push(await this.describe(n));
-      } catch {
-        /* bỏ qua file hỏng, không làm hỏng cả danh sách */
-      }
-    }
+    // File hỏng bị bỏ qua, không làm hỏng cả danh sách.
+    const rows = (await Promise.all(names.map((n) => this.describe(n).catch(() => null)))).filter((r): r is BackupRow => r !== null);
     rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     return rows;
   }
@@ -166,6 +157,7 @@ export class BackupsService implements OnApplicationBootstrap, OnApplicationShut
   async remove(name: string) {
     try {
       await unlink(this.path(name));
+      for (const key of this.cache.keys()) if (key.startsWith(`${name}:`)) this.cache.delete(key);
     } catch (e) {
       if (e instanceof HttpException) throw e;
       throw notFound();

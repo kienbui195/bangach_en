@@ -1,11 +1,13 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { createHash, createHmac } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ADMIN_API_TOKEN } from './admin-token.guard.js';
 import type { FieldError, FieldMeta } from './contract.js';
 import { BOM, parseCsv, stringifyCsv } from './csv.js';
 import type { Delegate, ResourceDefinition } from './resources/definition.js';
-import { ResourcesService, unprocessable } from './resources.service.js';
+import { apiError, unprocessable } from './errors.js';
+import { ResourcesService } from './resources.service.js';
+import { safeEqual } from '../security/safe-equal.js';
 
 /** BR17: giới hạn một lần nhập. */
 export const MAX_IMPORT_ROWS = 5000;
@@ -223,8 +225,8 @@ export class ImportExportService {
     const [expRaw, sig] = String(token ?? '').split('.');
     const exp = Number(expRaw);
     const want = Number.isFinite(exp) ? this.mac(def, matchKey, content, exp) : '';
-    const ok = !!sig && sig.length === want.length && timingSafeEqual(Buffer.from(sig), Buffer.from(want)) && exp >= Date.now();
-    if (!ok) throw new HttpException({ error: { code: 'preview_required', message: 'Phải chạy thử file này trước (token chạy thử thiếu, hết hạn hoặc không khớp nội dung file)' } }, HttpStatus.UNPROCESSABLE_ENTITY);
+    const ok = !!sig && safeEqual(sig, want) && exp >= Date.now();
+    if (!ok) throw apiError(HttpStatus.UNPROCESSABLE_ENTITY, 'preview_required', 'Phải chạy thử file này trước (token chạy thử thiếu, hết hạn hoặc không khớp nội dung file)');
   }
 
   // ------------------------------------------------------------------ xuất

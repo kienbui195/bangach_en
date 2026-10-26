@@ -1,11 +1,9 @@
-import { ConflictException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { FieldError, FieldMeta } from './contract.js';
+import { apiError, notFound, parseId, parsePaging, unprocessable } from './errors.js';
 import type { Delegate, ResourceDefinition } from './resources/definition.js';
 import { RESOURCES } from './resources/definitions.js';
-
-const MAX_PAGE_SIZE = 100;
-const DEFAULT_PAGE_SIZE = 25;
 
 export interface ListQuery {
   page?: string;
@@ -15,16 +13,13 @@ export interface ListQuery {
   filter?: Record<string, string>;
 }
 
-export const unprocessable = (fields: FieldError[], message = 'Dữ liệu không hợp lệ') =>
-  new HttpException({ error: { code: 'validation', message, fields } }, HttpStatus.UNPROCESSABLE_ENTITY);
-
 @Injectable()
 export class ResourcesService {
   constructor(private readonly prisma: PrismaService) {}
 
   find(key: string): ResourceDefinition {
     const def = RESOURCES.find((r) => r.meta.key === key);
-    if (!def) throw new NotFoundException({ error: { code: 'not_found', message: `Không có tài nguyên "${key}"` } });
+    if (!def) throw notFound(`Không có tài nguyên "${key}"`);
     return def;
   }
 
@@ -42,20 +37,13 @@ export class ResourcesService {
     return res;
   }
 
-  private parseId(raw: string): number {
-    const id = Number(raw);
-    if (!Number.isInteger(id) || id < 1) throw new NotFoundException({ error: { code: 'not_found', message: 'Không tìm thấy bản ghi' } });
-    return id;
-  }
-
   // ------------------------------------------------------------------ đọc
 
   async list(def: ResourceDefinition, q: ListQuery) {
     const d = this.delegate(def);
     if (def.meta.kind === 'singleton') return this.out(def, await this.singleton(def));
 
-    const page = Math.max(1, Number(q.page) || 1);
-    const pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, Number(q.pageSize) || DEFAULT_PAGE_SIZE)); // BR14
+    const { page, pageSize } = parsePaging(q.page, q.pageSize); // BR14
     const where: Record<string, unknown> = {};
     const errors: FieldError[] = [];
 
@@ -85,14 +73,14 @@ export class ResourcesService {
   }
 
   async get(def: ResourceDefinition, rawId: string) {
-    const row = await this.delegate(def).findUnique({ where: { id: this.parseId(rawId) } });
-    if (!row) throw new NotFoundException({ error: { code: 'not_found', message: 'Không tìm thấy bản ghi' } });
+    const row = await this.delegate(def).findUnique({ where: { id: parseId(rawId) } });
+    if (!row) throw notFound();
     return this.out(def, row);
   }
 
   private async singleton(def: ResourceDefinition) {
     const row = await this.delegate(def).findFirst({});
-    if (!row) throw new NotFoundException({ error: { code: 'not_found', message: 'Chưa có bản ghi' } });
+    if (!row) throw notFound('Chưa có bản ghi');
     return row;
   }
 
@@ -168,7 +156,7 @@ export class ResourcesService {
   }
 
   async create(def: ResourceDefinition, body: Record<string, unknown>) {
-    if (!def.meta.allowCreate) throw new HttpException({ error: { code: 'method_not_allowed', message: 'Không cho thêm' } }, HttpStatus.METHOD_NOT_ALLOWED);
+    if (!def.meta.allowCreate) throw apiError(HttpStatus.METHOD_NOT_ALLOWED, 'method_not_allowed', 'Không cho thêm');
     const { data, errors } = this.coerce(def, body ?? {}, true);
     const d = this.delegate(def);
     if (def.validate) errors.push(...(await def.validate({ data, existing: null, delegate: d })));
@@ -178,8 +166,8 @@ export class ResourcesService {
 
   async update(def: ResourceDefinition, rawId: string | null, body: Record<string, unknown>) {
     const d = this.delegate(def);
-    const existing = rawId === null ? await this.singleton(def) : await d.findUnique({ where: { id: this.parseId(rawId) } });
-    if (!existing) throw new NotFoundException({ error: { code: 'not_found', message: 'Không tìm thấy bản ghi' } });
+    const existing = rawId === null ? await this.singleton(def) : await d.findUnique({ where: { id: parseId(rawId) } });
+    if (!existing) throw notFound();
 
     // E3: người lưu sau nhận cảnh báo xung đột thay vì ghi đè lặng lẽ.
     const seen = body?.updatedAt;
@@ -194,8 +182,8 @@ export class ResourcesService {
   }
 
   async remove(def: ResourceDefinition, rawId: string) {
-    if (!def.meta.allowDelete) throw new HttpException({ error: { code: 'method_not_allowed', message: 'Không cho xóa' } }, HttpStatus.METHOD_NOT_ALLOWED);
-    await this.write(def, () => this.delegate(def).delete({ where: { id: this.parseId(rawId) } }));
+    if (!def.meta.allowDelete) throw apiError(HttpStatus.METHOD_NOT_ALLOWED, 'method_not_allowed', 'Không cho xóa');
+    await this.write(def, () => this.delegate(def).delete({ where: { id: parseId(rawId) } }));
     return { ok: true };
   }
 
@@ -210,7 +198,7 @@ export class ResourcesService {
         throw unprocessable(unique.length ? unique : [{ name: '_', message: 'Giá trị đã tồn tại' }]);
       }
       if (code === 'P2003') throw unprocessable([{ name: '_', message: 'Tham chiếu tới bản ghi không tồn tại' }]);
-      if (code === 'P2025') throw new NotFoundException({ error: { code: 'not_found', message: 'Không tìm thấy bản ghi' } });
+      if (code === 'P2025') throw notFound();
       throw e;
     }
   }

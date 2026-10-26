@@ -38,7 +38,7 @@ export interface ContentPayload {
   }[];
 }
 
-export const OFFICIAL_OWNER = 'official';
+const OFFICIAL_OWNER = 'official';
 
 @Injectable()
 export class ContentService {

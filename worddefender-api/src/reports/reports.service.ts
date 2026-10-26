@@ -11,7 +11,7 @@ const RATE_WINDOW_MS = 60 * 60_000;
 export const MAX_AUDIO_BYTES = 2 * 1024 * 1024; // BR6: 2MB = 2.097.152 byte
 
 /** BR26: các trường người chơi được báo lỗi. */
-export const REPORT_FIELDS = ['headword', 'displayForm', 'meaningVi', 'phonetic', 'example', 'audio'] as const;
+const REPORT_FIELDS = ['headword', 'displayForm', 'meaningVi', 'phonetic', 'example', 'audio'] as const;
 type ReportField = (typeof REPORT_FIELDS)[number];
 const MAX_LEN: Record<Exclude<ReportField, 'audio'>, number> = { headword: 16, displayForm: 100, meaningVi: 500, phonetic: 100, example: 2000 };
 

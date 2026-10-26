@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { timingSafeEqual } from 'node:crypto';
 import type { Request } from 'express';
+import { safeEqual } from '../security/safe-equal.js';
 
 export const ADMIN_API_TOKEN = Symbol('ADMIN_API_TOKEN');
 
@@ -24,8 +24,7 @@ export class AdminTokenGuard implements CanActivate {
     const ok =
       !!this.token &&
       this.token.length >= 32 &&
-      given.length === this.token.length &&
-      timingSafeEqual(Buffer.from(given), Buffer.from(this.token));
+      safeEqual(given, this.token);
     if (!ok) throw new UnauthorizedException({ error: { code: 'unauthorized', message: 'Sai hoặc thiếu token dịch vụ' } });
     return true;
   }

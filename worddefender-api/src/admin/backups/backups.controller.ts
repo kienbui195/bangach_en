@@ -1,5 +1,6 @@
-import { Controller, Delete, Get, HttpCode, NotFoundException, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { AdminTokenGuard } from '../admin-token.guard.js';
+import { notFound, parsePaging } from '../errors.js';
 import { BackupsService } from './backups.service.js';
 
 /** Đăng ký TRƯỚC AdminApiController để các đường /admin-api/backups… không rơi vào đường chung `:resource`. */
@@ -10,10 +11,9 @@ export class BackupsController {
 
   @Get()
   async list(@Query('page') page?: string, @Query('pageSize') pageSize?: string) {
-    const p = Math.max(1, Number(page) || 1);
-    const size = Math.min(100, Math.max(1, Number(pageSize) || 25));
+    const paging = parsePaging(page, pageSize);
     const rows = await this.backups.list();
-    return { items: rows.slice((p - 1) * size, p * size), total: rows.length, page: p, pageSize: size };
+    return { items: rows.slice((paging.page - 1) * paging.pageSize, paging.page * paging.pageSize), total: rows.length, ...paging };
   }
 
   @Post('actions/backup-now')
@@ -24,7 +24,7 @@ export class BackupsController {
 
   @Get('export')
   noExport(): never {
-    throw new NotFoundException({ error: { code: 'not_found', message: 'Sao lưu không hỗ trợ xuất' } });
+    throw notFound('Sao lưu không hỗ trợ xuất');
   }
 
   @Get(':name')

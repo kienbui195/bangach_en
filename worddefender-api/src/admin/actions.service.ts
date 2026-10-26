@@ -1,12 +1,11 @@
-import { ConflictException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DEFAULT_GAME_RULES } from '../game-config/default-rules.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { FieldError } from './contract.js';
 import type { Delegate } from './resources/definition.js';
 import { RESOURCES } from './resources/definitions.js';
-import { ResourcesService, unprocessable } from './resources.service.js';
-
-const notFound = (message: string) => new NotFoundException({ error: { code: 'not_found', message } });
+import { notFound, parseId, unprocessable } from './errors.js';
+import { ResourcesService } from './resources.service.js';
 
 /** Thao tác riêng của game, khai báo trong hợp đồng (`actions`). */
 @Injectable()
@@ -22,20 +21,14 @@ export class ActionsService {
     const note = typeof body?.note === 'string' ? body.note.trim().slice(0, 1000) : '';
     switch (key) {
       case 'word-reports:approve':
-        return this.approve(this.parseId(id), note);
+        return this.approve(parseId(id), note);
       case 'word-reports:reject':
-        return this.reject(this.parseId(id), note);
+        return this.reject(parseId(id), note);
       case 'game-config:reset-defaults':
         return this.resetDefaults(body);
       default:
         throw notFound(`Không có thao tác "${name}" cho "${resourceKey}"`);
     }
-  }
-
-  private parseId(raw: string | null): number {
-    const id = Number(raw);
-    if (!Number.isInteger(id) || id < 1) throw notFound('Không tìm thấy bản ghi');
-    return id;
   }
 
   /** Khóa dòng báo lỗi trong giao dịch để hai admin bấm cùng lúc chỉ có một người áp dụng (BR25). */
@@ -96,7 +89,7 @@ export class ActionsService {
     const option = typeof body?.option === 'string' ? body.option : '';
     const defaults = DEFAULT_GAME_RULES as unknown as Record<string, unknown>;
     if (option && !(option in defaults)) {
-      throw new HttpException({ error: { code: 'validation', message: `Nhóm luật "${option}" không có trong bộ mặc định` } }, HttpStatus.UNPROCESSABLE_ENTITY);
+      throw unprocessable([], `Nhóm luật "${option}" không có trong bộ mặc định`);
     }
     const rules = option ? { ...current.rules, [option]: structuredClone(defaults[option]) } : structuredClone(defaults);
     return this.resources.update(def, null, { updatedAt: body?.updatedAt, rules });
