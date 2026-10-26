@@ -103,4 +103,35 @@ describe('GET /api/content (US-01)', () => {
     expect(rules.hearts.lossPerMiss).toBe(0.5);
     expect(rules.pace).toBeDefined();
   });
+
+  describe('CORS cho game ở domain khác', () => {
+    const GAME = 'https://game.test';
+    beforeEach(() => {
+      process.env.CORS_ORIGINS = `${GAME}, http://localhost:5173`;
+    });
+    afterEach(() => {
+      delete process.env.CORS_ORIGINS;
+    });
+
+    it('domain trong danh sách đọc được nội dung và thấy ETag; preflight trả 204', async () => {
+      const res = await request(app.getHttpServer()).get('/api/content').set('Origin', GAME).expect(200);
+      expect(res.headers['access-control-allow-origin']).toBe(GAME);
+      expect(res.headers['access-control-expose-headers']).toContain('ETag');
+      const pre = await request(app.getHttpServer()).options('/api/word-reports').set('Origin', GAME).set('Access-Control-Request-Method', 'POST').expect(204);
+      expect(pre.headers['access-control-allow-methods']).toContain('POST');
+    });
+
+    it('domain lạ không được cấp quyền; cổng quản trị không bao giờ có CORS', async () => {
+      const res = await request(app.getHttpServer()).get('/api/content').set('Origin', 'https://evil.test').expect(200);
+      expect(res.headers['access-control-allow-origin']).toBeUndefined();
+      const admin = await request(app.getHttpServer()).get('/admin-api/meta').set('Origin', GAME);
+      expect(admin.headers['access-control-allow-origin']).toBeUndefined();
+    });
+
+    it('chưa cấu hình CORS_ORIGINS thì không cấp quyền cho ai', async () => {
+      delete process.env.CORS_ORIGINS;
+      const res = await request(app.getHttpServer()).get('/api/content').set('Origin', GAME).expect(200);
+      expect(res.headers['access-control-allow-origin']).toBeUndefined();
+    });
+  });
 });

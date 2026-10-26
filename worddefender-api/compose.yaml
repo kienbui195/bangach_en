@@ -11,6 +11,8 @@ services:
       - /srv/secrets/worddefender.admin.env   # ADMIN_API_TOKEN=... (token dịch vụ cho dashboard)
     environment:
       PORT: "3000"
+      # Domain của game (trình duyệt gọi sang máy chủ này), cách nhau bằng dấu phẩy
+      CORS_ORIGINS: "https://bangach.banhchungranchaydenxi.click"
     # Caddy chạy trên máy chủ (không nằm trong Docker) nên cần một cổng chỉ nghe ở 127.0.0.1.
     ports:
       - "127.0.0.1:3101:3000"
