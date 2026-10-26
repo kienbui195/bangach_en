@@ -1,0 +1,3 @@
+
+# Prisma client sinh ra khi build
+src/generated/

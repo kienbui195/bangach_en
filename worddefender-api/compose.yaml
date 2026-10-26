@@ -1,0 +1,25 @@
+# Chạy trên VPS: cần mạng Docker `appnet` (đã có) và database tạo bằng `vps db-create worddefender`.
+name: worddefender-api
+services:
+  worddefender-api:
+    build: .
+    image: worddefender-api:latest
+    container_name: worddefender-api
+    restart: unless-stopped
+    env_file: /srv/secrets/worddefender.db.env
+    environment:
+      PORT: "3000"
+    # Caddy chạy trên máy chủ (không nằm trong Docker) nên cần một cổng chỉ nghe ở 127.0.0.1.
+    ports:
+      - "127.0.0.1:3101:3000"
+    volumes:
+      - /srv/data/worddefender/uploads:/app/uploads
+    networks: [appnet]
+    mem_limit: 256m
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+networks:
+  appnet:
+    external: true

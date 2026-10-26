@@ -1,0 +1,177 @@
+// Lược đồ database worddefender (MySQL). Thiết kế: tài liệu 03-so-do.html, mục ERD.
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum TopicSource {
+  official
+  custom
+}
+
+enum Visibility {
+  private
+  pending
+  approved
+  rejected
+}
+
+enum Cefr {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+}
+
+enum Difficulty {
+  easy
+  medium
+  hard
+  boss
+}
+
+enum VocabKind {
+  word
+  term
+  abbreviation
+}
+
+enum PartOfSpeech {
+  noun
+  verb
+  adjective
+  adverb
+  pronoun
+  preposition
+  conjunction
+  auxiliary
+  particle
+  determiner
+  interjection
+  phrase
+}
+
+enum ReportField {
+  headword
+  displayForm
+  meaningVi
+  phonetic
+  example
+  audio
+}
+
+enum ReviewStatus {
+  pending
+  approved
+  rejected
+}
+
+/// Chặng: một chủ đề lớn.
+model Topic {
+  id          Int         @id @default(autoincrement())
+  slug        String      @unique @db.VarChar(100)
+  title       String      @db.VarChar(200)
+  source      TopicSource
+  visibility  Visibility
+  ownerKey    String      @map("owner_key") @db.VarChar(64)
+  domain      String?     @db.VarChar(100)
+  order       Int?
+  cefr        Cefr?
+  description String?     @db.Text
+  themeColor  String?     @map("theme_color") @db.VarChar(16)
+  reviewedBy  String?     @map("reviewed_by") @db.VarChar(100)
+  reviewedAt  DateTime?   @map("reviewed_at")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  levels      Level[]
+
+  @@map("topics")
+}
+
+/// Màn chơi trong một chặng.
+model Level {
+  id            Int        @id @default(autoincrement())
+  topicId       Int        @map("topic_id")
+  topic         Topic      @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  uniqueKey     String     @unique @map("unique_key") @db.VarChar(120)
+  levelNumber   Int        @map("level_number")
+  title         String?    @db.VarChar(200)
+  subtitle      String?    @db.VarChar(200)
+  difficulty    Difficulty
+  isBoss        Boolean    @default(false) @map("is_boss")
+  targetCount   Int        @map("target_count")
+  minMissing    Int?       @map("min_missing")
+  maxMissing    Int?       @map("max_missing")
+  fallSpeed     Decimal?   @map("fall_speed") @db.Decimal(6, 2)
+  spawnInterval Int?       @map("spawn_interval")
+  maxConcurrent Int?       @map("max_concurrent")
+  isGenerated   Boolean    @default(false) @map("is_generated")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  @@index([topicId, levelNumber])
+  @@map("levels")
+}
+
+/// Từ vựng. (ownerKey, headword) duy nhất: Strapi chưa có chỉ mục này, chỉ chặn bằng lifecycle.
+model Vocabulary {
+  id           Int           @id @default(autoincrement())
+  ownerKey     String        @map("owner_key") @db.VarChar(64)
+  headword     String        @db.VarChar(16)
+  displayForm  String?       @map("display_form") @db.VarChar(100)
+  kind         VocabKind
+  topicSlug    String?       @map("topic_slug") @db.VarChar(100)
+  levelNumber  Int?          @map("level_number")
+  orderIndex   Int?          @map("order_index")
+  category     String?       @db.VarChar(100)
+  meaningVi    String        @map("meaning_vi") @db.VarChar(500)
+  phonetic     String?       @db.VarChar(100)
+  partOfSpeech PartOfSpeech? @map("part_of_speech")
+  example      String?       @db.Text
+  cefr         Cefr?
+  length       Int?
+  audioPath    String?       @map("audio_path") @db.VarChar(255)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@unique([ownerKey, headword])
+  @@index([topicSlug, levelNumber])
+  @@map("vocabularies")
+}
+
+/// Luật chơi: đúng một dòng.
+model GameConfig {
+  id        Int      @id @default(autoincrement())
+  rules     Json
+  version   Int      @default(1)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("game_config")
+}
+
+/// Báo lỗi từ của người chơi. Luôn vào hàng chờ pending.
+model WordReport {
+  id                 Int          @id @default(autoincrement())
+  headword           String       @db.VarChar(16)
+  field              ReportField
+  currentValue       String?      @map("current_value") @db.Text
+  suggestedValue     String?      @map("suggested_value") @db.Text
+  suggestedAudioPath String?      @map("suggested_audio_path") @db.VarChar(255)
+  note               String?      @db.Text
+  reporterKey        String?      @map("reporter_key") @db.VarChar(64)
+  reviewStatus       ReviewStatus @default(pending) @map("review_status")
+  reviewNote         String?      @map("review_note") @db.Text
+  appliedAt          DateTime?    @map("applied_at")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+
+  @@index([reviewStatus])
+  @@index([headword])
+  @@map("word_reports")
+}

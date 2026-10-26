@@ -1,0 +1,17 @@
+import { Controller, Get, Header } from '@nestjs/common';
+import { ContentService } from './content.service.js';
+
+@Controller('api')
+export class ContentController {
+  constructor(private readonly content: ContentService) {}
+
+  /**
+   * Một lần gọi lấy toàn bộ nội dung và luật chơi. Express tự tính ETag từ thân phản hồi và trả 304 khi
+   * `If-None-Match` khớp, nên mã bản chỉ đổi khi nội dung hoặc luật chơi đổi (BR2).
+   */
+  @Get('content')
+  @Header('Cache-Control', 'no-cache')
+  get() {
+    return this.content.build();
+  }
+}
