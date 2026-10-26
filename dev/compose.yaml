@@ -1,0 +1,74 @@
+# Môi trường chạy thử ở laptop để người dùng và Claude cùng test: bash dev/up.sh
+# Giao diện game http://127.0.0.1:3402 · máy chủ game http://127.0.0.1:3401 · hub http://127.0.0.1:3400
+name: wd-dev
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: wd-dev-mysql-app
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: dev
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "127.0.0.1:33062:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-pdev"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  worddefender-api:
+    build: ../worddefender-api
+    container_name: wd-dev-api
+    restart: unless-stopped
+    user: "${DEV_UID:-1000}:${DEV_GID:-1000}"
+    depends_on:
+      mysql: { condition: service_healthy }
+    environment:
+      PORT: "3000"
+      DATABASE_URL: mysql://root:dev@mysql:3306/worddefender
+      ADMIN_API_TOKEN: ${ADMIN_API_TOKEN}
+      BACKUP_DIR: /app/backups
+      UPLOAD_DIR: /app/uploads
+      CORS_ORIGINS: http://127.0.0.1:3402,http://localhost:3402
+    ports:
+      - "127.0.0.1:3401:3000"
+    volumes:
+      - ./.data/backups:/app/backups
+      - ./.data/uploads:/app/uploads
+
+  admin-hub:
+    build: ../admin-hub
+    container_name: wd-dev-hub
+    restart: unless-stopped
+    user: "${DEV_UID:-1000}:${DEV_GID:-1000}"
+    depends_on:
+      mysql: { condition: service_healthy }
+    environment:
+      PORT: "3200"
+      DATABASE_URL: mysql://root:dev@mysql:3306/hub
+      HUB_ORIGIN: http://127.0.0.1:3400
+      COOKIE_SECURE: "false"
+      HUB_MASTER_KEY_FILE: /run/hub/master-key
+      HUB_SETUP_TOKEN_FILE: /run/hub/setup-token
+      HUB_GAMES_DIR: /run/hub/games
+    ports:
+      - "127.0.0.1:3400:3200"
+    volumes:
+      - ./.data/hub:/run/hub
+
+  worddefender-web:
+    build:
+      context: ../worddefender
+      args:
+        VITE_CMS_URL: http://127.0.0.1:3401
+    container_name: wd-dev-web
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3402:80"
+
+volumes:
+  mysql-data:
