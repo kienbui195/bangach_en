@@ -1,5 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { GamesModule } from './games/games.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { Clock, SystemClock } from './clock/clock.js';
 import { HUB_ENV, readEnv } from './config/env.js';
@@ -19,5 +20,5 @@ import { OriginGuard } from './security/origin.guard.js';
 })
 class CoreModule {}
 
-@Module({ imports: [CoreModule, PrismaModule, AuthModule] })
+@Module({ imports: [CoreModule, PrismaModule, AuthModule, GamesModule] })
 export class AppModule {}

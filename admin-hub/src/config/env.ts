@@ -17,6 +17,10 @@ export interface HubEnv {
   passwordMin: number;
   passwordMax: number;
   challengeMs: number;
+  /** Hạn chờ một game trả lời (BR30). */
+  gameTimeoutMs: number;
+  /** Các phiên bản hợp đồng quản trị mà dashboard hiểu (BR33). */
+  supportedContracts: number[];
 }
 
 const num = (v: string | undefined, def: number) => (v === undefined || v === '' ? def : Number(v));
@@ -54,6 +58,8 @@ export function readEnv(env: Env): HubEnv {
     passwordMin: num(env.PASSWORD_MIN, 16),
     passwordMax: num(env.PASSWORD_MAX, 128),
     challengeMs: 5 * 60_000,
+    gameTimeoutMs: num(env.GAME_TIMEOUT_MS, 3000),
+    supportedContracts: [1],
   };
 }
 

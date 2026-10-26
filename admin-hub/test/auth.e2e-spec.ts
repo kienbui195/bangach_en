@@ -78,6 +78,8 @@ describe('Đăng nhập admin (US-03)', () => {
       passwordMin: 16,
       passwordMax: 128,
       challengeMs: 5 * 60_000,
+      gameTimeoutMs: 3000,
+      supportedContracts: [1],
     };
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(HUB_ENV)
