@@ -10,6 +10,7 @@ export function describeWrite(method: string, path: string): { resource: string;
   const seg = path.split('/').filter(Boolean);
   const resource = seg[0] ?? '';
   if (seg[1] === 'import') return { resource, recordId: null, action: 'import' };
+  if (seg[1] === 'actions' && seg[2]) return { resource, recordId: null, action: seg[2] }; // thao tác trên cả tài nguyên
   if (seg[2] === 'actions' && seg[3]) return { resource, recordId: seg[1], action: seg[3] };
   const recordId = seg[1] ?? null;
   return { resource, recordId, action: method === 'POST' ? 'create' : method === 'DELETE' ? 'delete' : 'update' };
@@ -72,7 +73,9 @@ export class GamesController {
 
     try {
       const hasBody = isWrite && req.body !== undefined && Object.keys(req.body as object).length > 0;
-      const result = await this.client.call(game.baseUrl, token, req.method, path, query, hasBody ? req.body : undefined);
+      // Nhập file lớn cần thời gian xử lý lâu hơn các lệnh thường.
+      const timeout = /\/import$/.test(path) ? 120_000 : undefined;
+      const result = await this.client.call(game.baseUrl, token, req.method, path, query, hasBody ? req.body : undefined, timeout);
       if (auditId !== null) await this.audit.finish(auditId, result.status < 400).catch(() => undefined);
       res.status(result.status).json(result.body);
     } catch (e) {

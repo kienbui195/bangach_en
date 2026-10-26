@@ -162,7 +162,20 @@ const gameConfig: ResourceDefinition = {
     primaryKey: 'id',
     allowCreate: false,
     allowDelete: false,
-    actions: [],
+    actions: [
+      {
+        name: 'reset-defaults',
+        label: 'Đặt lại về mặc định',
+        target: 'resource',
+        options: [
+          { value: '', label: 'Tất cả các nhóm' },
+          { value: 'pace', label: 'Nhịp chơi' },
+          { value: 'blanks', label: 'Chữ khuyết' },
+          { value: 'words', label: 'Bốc từ' },
+          { value: 'hearts', label: 'Tim và combo' },
+        ],
+      },
+    ],
     description: 'Mọi hằng số luật chơi nằm ở đây. Sửa xong, người chơi nhận luật mới ở lần tải kế tiếp.',
     fields: [
       f('id', 'Mã', 'int', { readonly: true }),
@@ -185,7 +198,10 @@ const wordReports: ResourceDefinition = {
     primaryKey: 'id',
     allowCreate: false,
     allowDelete: true,
-    actions: [],
+    actions: [
+      { name: 'approve', label: 'Duyệt', when: { field: 'reviewStatus', equals: 'pending' } },
+      { name: 'reject', label: 'Từ chối', needsNote: true, when: { field: 'reviewStatus', equals: 'pending' } },
+    ],
     fields: [
       f('id', 'Mã', 'int', { readonly: true, list: true, sortable: true }),
       f('headword', 'Từ', 'string', { readonly: true, list: true, search: true, filter: true }),

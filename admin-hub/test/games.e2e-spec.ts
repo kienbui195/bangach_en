@@ -269,6 +269,23 @@ describe('Nối game và chuyển lệnh (US-04, 08, 09)', () => {
       spy.mockRestore();
     });
 
+    it('BR44: đường nhập nhận thân JSON lớn (1MB) và chuyển nguyên vẹn; mọi đường khác vẫn giới hạn 16KB', async () => {
+      const content = 'x'.repeat(1024 * 1024);
+      await send('post', '/games/fake/admin/vocabularies/import?dryRun=true', { format: 'csv', content }).expect(200);
+      expect(game.seen[0].body.length).toBeGreaterThan(1024 * 1024);
+      const log = await prisma.auditLog.findFirstOrThrow();
+      expect(log).toMatchObject({ resource: 'vocabularies', action: 'import', recordId: null });
+      await send('put', '/games/fake/admin/vocabularies/7', { meaningVi: 'x'.repeat(20_000) }).expect(413);
+      await send('post', '/games/fake/admin/vocabularies/import?dryRun=true', { format: 'csv', content: 'x'.repeat(8 * 1024 * 1024) }).expect(413);
+    });
+
+    it('thao tác riêng được ghi nhật ký đúng: duyệt báo lỗi (có mã bản ghi) và đặt lại luật (cả tài nguyên, không mã)', async () => {
+      await send('post', '/games/fake/admin/vocabularies/5/actions/approve', {}).expect(200);
+      await send('post', '/games/fake/admin/vocabularies/actions/reset-defaults', { option: 'hearts' }).expect(200);
+      const logs = await prisma.auditLog.findMany({ orderBy: { id: 'asc' } });
+      expect(logs.map((l) => [l.action, l.recordId])).toEqual([['approve', '5'], ['reset-defaults', null]]);
+    });
+
     it('chưa đăng nhập hoặc game chưa nối thì không chuyển được', async () => {
       await request(server()).get('/games/fake/admin/vocabularies').expect(401);
       await get('/games/khong-co/admin/vocabularies').expect(404);

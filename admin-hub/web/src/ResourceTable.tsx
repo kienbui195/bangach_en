@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api, type FieldMeta, type ListResult, type ResourceMeta } from './api';
+import { ImportPanel } from './ImportPanel';
 import { RecordForm } from './RecordForm';
 import { btn, btnDanger, btnPrimary, Card, ErrorBox, input } from './ui';
 
@@ -24,6 +25,7 @@ export function ResourceTable({ gameKey, resource }: { gameKey: string; resource
   const [sort, setSort] = useState<string>('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState<Rec | 'new' | null>(null);
+  const [importing, setImporting] = useState(false);
 
   const columns = resource.fields.filter((f) => f.list);
   const filterFields = resource.fields.filter((f) => f.filter && f.type === 'enum');
@@ -44,8 +46,42 @@ export function ResourceTable({ gameKey, resource }: { gameKey: string; resource
     onSuccess: refresh,
   });
 
+  /** US-07: thao tác riêng của game trên một bản ghi (duyệt, từ chối...). */
+  const act = useMutation({
+    mutationFn: ({ id, name, note }: { id: unknown; name: string; note?: string }) => api(`/games/${gameKey}/admin/${resource.key}/${String(id)}/actions/${name}`, { method: 'POST', body: { note } }),
+    onSuccess: refresh,
+  });
+  const exportFile = useMutation({
+    mutationFn: async (format: 'csv' | 'json') => {
+      const p = new URLSearchParams({ format });
+      if (search) p.set('q', search);
+      for (const [k, v] of Object.entries(filters)) if (v) p.set(`filter[${k}]`, v);
+      const out = await api<{ filename: string; content: string }>(`/games/${gameKey}/admin/${resource.key}/export?${p}`);
+      const blob = new Blob([out.content], { type: format === 'csv' ? 'text/csv;charset=utf-8' : 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = out.filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    },
+  });
+  const rowActions = (row: Rec) => resource.actions.filter((a) => a.target !== 'resource' && (!a.when || String(row[a.when.field]) === a.when.equals));
+
   const toggleSort = (name: string) => setSort(sort === `${name}:asc` ? `${name}:desc` : `${name}:asc`);
   const pageCount = list.data ? Math.max(1, Math.ceil(list.data.total / list.data.pageSize)) : 1;
+
+  if (importing) {
+    return (
+      <ImportPanel
+        gameKey={gameKey}
+        resource={resource}
+        onClose={(changed) => {
+          setImporting(false);
+          if (changed) refresh();
+        }}
+      />
+    );
+  }
 
   if (editing) {
     return (
@@ -97,10 +133,13 @@ export function ResourceTable({ gameKey, resource }: { gameKey: string; resource
           </select>
         ))}
         <div className="flex-1" />
+        {resource.import && <button className={btn} onClick={() => setImporting(true)}>Nhập file</button>}
+        <button className={btn} disabled={exportFile.isPending} onClick={() => exportFile.mutate('csv')}>Xuất CSV</button>
+        <button className={btn} disabled={exportFile.isPending} onClick={() => exportFile.mutate('json')}>Xuất JSON</button>
         {resource.allowCreate && <button className={btnPrimary} onClick={() => setEditing('new')}>Thêm</button>}
       </div>
 
-      <ErrorBox error={list.error ?? remove.error} />
+      <ErrorBox error={list.error ?? remove.error ?? act.error ?? exportFile.error} />
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="w-full text-left text-sm">
@@ -123,6 +162,25 @@ export function ResourceTable({ gameKey, resource }: { gameKey: string; resource
               <tr key={String(row[resource.primaryKey])} className="hover:bg-slate-50">
                 {columns.map((f) => <td key={f.name} className="px-3 py-2 align-top">{cell(f, row[f.name])}</td>)}
                 <td className="px-3 py-2 text-right whitespace-nowrap">
+                  {rowActions(row).map((a) => (
+                    <span key={a.name}>
+                      <button
+                        className={btn}
+                        disabled={act.isPending}
+                        onClick={() => {
+                          let note: string | undefined;
+                          if (a.needsNote) {
+                            const n = prompt(`${a.label}: ghi chú (có thể để trống)`);
+                            if (n === null) return;
+                            note = n;
+                          }
+                          act.mutate({ id: row[resource.primaryKey], name: a.name, note });
+                        }}
+                      >
+                        {a.label}
+                      </button>{' '}
+                    </span>
+                  ))}
                   <button className={btn} onClick={() => setEditing(row)}>Sửa</button>{' '}
                   {resource.allowDelete && (
                     <button className={btnDanger} onClick={() => confirm('Xóa bản ghi này? Không hoàn tác được.') && remove.mutate(row[resource.primaryKey])}>Xóa</button>

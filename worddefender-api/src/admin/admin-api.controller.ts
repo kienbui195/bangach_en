@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { ActionsService } from './actions.service.js';
 import { ImportExportService, type ImportInput } from './import-export.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AdminTokenGuard } from './admin-token.guard.js';
@@ -16,6 +17,7 @@ export class AdminApiController {
     private readonly resources: ResourcesService,
     private readonly prisma: PrismaService,
     private readonly importExport: ImportExportService,
+    private readonly actions: ActionsService,
   ) {}
 
   @Get('meta')
@@ -48,6 +50,18 @@ export class AdminApiController {
   @Post(':resource/import')
   import(@Param('resource') key: string, @Query('dryRun') dryRun: string | undefined, @Body() body: ImportInput) {
     return this.importExport.import(this.resources.find(key), dryRun !== 'false', body);
+  }
+
+  /** Thao tác áp dụng cho cả tài nguyên (ví dụ đặt lại luật chơi về mặc định). */
+  @Post(':resource/actions/:name')
+  resourceAction(@Param('resource') key: string, @Param('name') name: string, @Body() body: Body) {
+    return this.actions.run(this.resources.find(key).meta.key, null, name, body);
+  }
+
+  /** Thao tác trên một bản ghi (ví dụ duyệt, từ chối báo lỗi). */
+  @Post(':resource/:id/actions/:name')
+  recordAction(@Param('resource') key: string, @Param('id') id: string, @Param('name') name: string, @Body() body: Body) {
+    return this.actions.run(this.resources.find(key).meta.key, id, name, body);
   }
 
   @Get(':resource/export')

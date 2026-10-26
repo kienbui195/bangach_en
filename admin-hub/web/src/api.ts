@@ -59,6 +59,8 @@ export interface ActionMeta {
   label: string;
   when?: { field: string; equals: string };
   needsNote?: boolean;
+  target?: 'record' | 'resource';
+  options?: { value: string; label: string }[];
 }
 
 export interface ResourceMeta {
