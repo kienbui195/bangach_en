@@ -11,6 +11,7 @@ services:
       - /srv/secrets/worddefender.admin.env   # ADMIN_API_TOKEN=... (token dịch vụ cho dashboard)
     environment:
       PORT: "3000"
+      BACKUP_DIR: /app/backups   # sao lưu JSON do dashboard quản lý (tự sao lưu mỗi ngày)
       # Domain của game (trình duyệt gọi sang máy chủ này), cách nhau bằng dấu phẩy
       CORS_ORIGINS: "https://bangach.baodom.xyz"
     # Caddy chạy trên máy chủ (không nằm trong Docker) nên cần một cổng chỉ nghe ở 127.0.0.1.
@@ -18,6 +19,7 @@ services:
       - "127.0.0.1:3101:3000"
     volumes:
       - /srv/data/worddefender/uploads:/app/uploads
+      - /srv/data/worddefender/backups:/app/backups
     networks: [appnet]
     mem_limit: 256m
     read_only: true

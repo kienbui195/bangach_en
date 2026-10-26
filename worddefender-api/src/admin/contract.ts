@@ -32,6 +32,8 @@ export interface ActionMeta {
   target?: 'record' | 'resource';
   /** Danh sách lựa chọn gửi kèm dưới tên `option` (rỗng nghĩa là mọi nhóm). */
   options?: { value: string; label: string }[];
+  /** Hỏi xác nhận bằng câu này trước khi thực hiện (thao tác nguy hiểm như khôi phục). */
+  confirm?: string;
 }
 
 export interface ResourceMeta {
@@ -42,6 +44,10 @@ export interface ResourceMeta {
   fields: FieldMeta[];
   allowCreate: boolean;
   allowDelete: boolean;
+  /** Mặc định true. Đặt false cho tài nguyên chỉ đọc (ví dụ sao lưu): dashboard ẩn nút Sửa. */
+  allowEdit?: boolean;
+  /** Mặc định true. Đặt false nếu xuất CSV/JSON không có nghĩa với tài nguyên này. */
+  allowExport?: boolean;
   actions: ActionMeta[];
   import?: { formats: string[]; matchKey: string };
   description?: string;

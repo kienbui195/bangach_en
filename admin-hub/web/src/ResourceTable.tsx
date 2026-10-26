@@ -26,6 +26,7 @@ export function ResourceTable({ gameKey, resource }: { gameKey: string; resource
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState<Rec | 'new' | null>(null);
   const [importing, setImporting] = useState(false);
+  const [notice, setNotice] = useState('');
 
   const columns = resource.fields.filter((f) => f.list);
   const filterFields = resource.fields.filter((f) => f.filter && f.type === 'enum');
@@ -41,6 +42,8 @@ export function ResourceTable({ gameKey, resource }: { gameKey: string; resource
     queryFn: () => api<ListResult>(`/games/${gameKey}/admin/${resource.key}?${params}`),
   });
   const refresh = () => qc.invalidateQueries({ queryKey: ['rows', gameKey, resource.key] });
+  /** Thao tác như khôi phục đổi dữ liệu của mọi bảng, nên làm mới cả game. */
+  const refreshAll = () => qc.invalidateQueries({ queryKey: ['rows', gameKey] });
   const remove = useMutation({
     mutationFn: (id: unknown) => api(`/games/${gameKey}/admin/${resource.key}/${String(id)}`, { method: 'DELETE' }),
     onSuccess: refresh,
@@ -48,8 +51,19 @@ export function ResourceTable({ gameKey, resource }: { gameKey: string; resource
 
   /** US-07: thao tác riêng của game trên một bản ghi (duyệt, từ chối...). */
   const act = useMutation({
-    mutationFn: ({ id, name, note }: { id: unknown; name: string; note?: string }) => api(`/games/${gameKey}/admin/${resource.key}/${String(id)}/actions/${name}`, { method: 'POST', body: { note } }),
-    onSuccess: refresh,
+    mutationFn: ({ id, name, note }: { id: unknown; name: string; note?: string; label: string }) => api(`/games/${gameKey}/admin/${resource.key}/${String(id)}/actions/${name}`, { method: 'POST', body: { note } }),
+    onSuccess: (_r, v) => {
+      setNotice(`Đã thực hiện: ${v.label}`);
+      return refreshAll();
+    },
+  });
+  /** Thao tác trên cả tài nguyên (ví dụ "Sao lưu ngay"). */
+  const actAll = useMutation({
+    mutationFn: ({ name }: { name: string; label: string }) => api(`/games/${gameKey}/admin/${resource.key}/actions/${name}`, { method: 'POST', body: {} }),
+    onSuccess: (_r, v) => {
+      setNotice(`Đã thực hiện: ${v.label}`);
+      return refreshAll();
+    },
   });
   const exportFile = useMutation({
     mutationFn: async (format: 'csv' | 'json') => {
@@ -65,6 +79,7 @@ export function ResourceTable({ gameKey, resource }: { gameKey: string; resource
       URL.revokeObjectURL(a.href);
     },
   });
+  const tableActions = resource.actions.filter((a) => a.target === 'resource');
   const rowActions = (row: Rec) => resource.actions.filter((a) => a.target !== 'resource' && (!a.when || String(row[a.when.field]) === a.when.equals));
 
   const toggleSort = (name: string) => setSort(sort === `${name}:asc` ? `${name}:desc` : `${name}:asc`);
@@ -133,13 +148,28 @@ export function ResourceTable({ gameKey, resource }: { gameKey: string; resource
           </select>
         ))}
         <div className="flex-1" />
+        {tableActions.map((a) => (
+          <button
+            key={a.name}
+            className={btnPrimary}
+            disabled={actAll.isPending}
+            onClick={() => (!a.confirm || confirm(a.confirm)) && actAll.mutate({ name: a.name, label: a.label })}
+          >
+            {actAll.isPending && actAll.variables?.name === a.name ? 'Đang chạy…' : a.label}
+          </button>
+        ))}
         {resource.import && <button className={btn} onClick={() => setImporting(true)}>Nhập file</button>}
-        <button className={btn} disabled={exportFile.isPending} onClick={() => exportFile.mutate('csv')}>Xuất CSV</button>
-        <button className={btn} disabled={exportFile.isPending} onClick={() => exportFile.mutate('json')}>Xuất JSON</button>
+        {resource.allowExport !== false && (
+          <>
+            <button className={btn} disabled={exportFile.isPending} onClick={() => exportFile.mutate('csv')}>Xuất CSV</button>
+            <button className={btn} disabled={exportFile.isPending} onClick={() => exportFile.mutate('json')}>Xuất JSON</button>
+          </>
+        )}
         {resource.allowCreate && <button className={btnPrimary} onClick={() => setEditing('new')}>Thêm</button>}
       </div>
 
-      <ErrorBox error={list.error ?? remove.error ?? act.error ?? exportFile.error} />
+      <ErrorBox error={list.error ?? remove.error ?? act.error ?? actAll.error ?? exportFile.error} />
+      {notice && !(act.error || actAll.error) && <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{notice}</p>}
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="w-full text-left text-sm">
@@ -168,20 +198,21 @@ export function ResourceTable({ gameKey, resource }: { gameKey: string; resource
                         className={btn}
                         disabled={act.isPending}
                         onClick={() => {
+                          if (a.confirm && !confirm(a.confirm)) return;
                           let note: string | undefined;
                           if (a.needsNote) {
                             const n = prompt(`${a.label}: ghi chú (có thể để trống)`);
                             if (n === null) return;
                             note = n;
                           }
-                          act.mutate({ id: row[resource.primaryKey], name: a.name, note });
+                          act.mutate({ id: row[resource.primaryKey], name: a.name, note, label: a.label });
                         }}
                       >
                         {a.label}
                       </button>{' '}
                     </span>
                   ))}
-                  <button className={btn} onClick={() => setEditing(row)}>Sửa</button>{' '}
+                  {resource.allowEdit !== false && <button className={btn} onClick={() => setEditing(row)}>Sửa</button>}{' '}
                   {resource.allowDelete && (
                     <button className={btnDanger} onClick={() => confirm('Xóa bản ghi này? Không hoàn tác được.') && remove.mutate(row[resource.primaryKey])}>Xóa</button>
                   )}

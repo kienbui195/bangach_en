@@ -70,7 +70,7 @@ describe('admin-api', () => {
       const res = await api('get', '/meta').expect(200);
       expect(res.body.contractVersion).toBe(1);
       expect(res.body.game.key).toBe('worddefender');
-      expect(res.body.resources.map((r: { key: string }) => r.key)).toEqual(['topics', 'levels', 'vocabularies', 'game-config', 'word-reports']);
+      expect(res.body.resources.map((r: { key: string }) => r.key)).toEqual(['topics', 'levels', 'vocabularies', 'game-config', 'word-reports', 'backups']);
       const vocab = res.body.resources.find((r: { key: string }) => r.key === 'vocabularies');
       expect(vocab.import).toEqual({ formats: ['csv', 'json'], matchKey: 'headword' });
       expect(vocab.fields.find((f: { name: string }) => f.name === 'headword')).toMatchObject({ required: true, type: 'string' });

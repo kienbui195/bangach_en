@@ -61,6 +61,7 @@ export interface ActionMeta {
   needsNote?: boolean;
   target?: 'record' | 'resource';
   options?: { value: string; label: string }[];
+  confirm?: string;
 }
 
 export interface ResourceMeta {
@@ -71,6 +72,8 @@ export interface ResourceMeta {
   fields: FieldMeta[];
   allowCreate: boolean;
   allowDelete: boolean;
+  allowEdit?: boolean;
+  allowExport?: boolean;
   actions: ActionMeta[];
   import?: { formats: string[]; matchKey: string };
   description?: string;

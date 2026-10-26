@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } fro
 import { ActionsService } from './actions.service.js';
 import { ImportExportService, type ImportInput } from './import-export.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { BACKUPS_META } from './backups/backups.meta.js';
 import { AdminTokenGuard } from './admin-token.guard.js';
 import { CONTRACT_VERSION, type GameMeta } from './contract.js';
 import { RESOURCES } from './resources/definitions.js';
@@ -25,7 +26,7 @@ export class AdminApiController {
     return {
       game: { key: 'worddefender', name: 'WordDefender', version: process.env.APP_VERSION ?? '0.0.1' },
       contractVersion: CONTRACT_VERSION,
-      resources: RESOURCES.map((r) => r.meta),
+      resources: [...RESOURCES.map((r) => r.meta), BACKUPS_META],
     };
   }
 
