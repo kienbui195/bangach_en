@@ -2,3 +2,4 @@
 # Prisma client sinh ra khi build
 src/generated/
 *.tsbuildinfo
+uploads/
