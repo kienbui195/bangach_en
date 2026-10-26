@@ -205,11 +205,15 @@ async function hubGroup() {
   const preRestore = (await page.getByRole('cell', { name: /pre-restore/ }).count()) > 0;
   rec('EXTRA-BACKUP-UI', afterDelete === 'ball,lamp' && afterRestore === 'ball,desk,lamp' && preRestore && /TOÀN BỘ/.test(dialogs[0] ?? ''), `Sao lưu ngay, xóa "desk" (${afterDelete}), bấm Khôi phục (hộp xác nhận hiện), dữ liệu về ${afterRestore}; có bản pre-restore: ${preRestore}`);
   // AC-08.2: dừng game, thẻ tự chuyển "Không phản hồi" không cần tải lại
+  await page.goto(`${HUB}/`); // về trang Trạng thái (các ca trước đã đi sang tab khác)
+  await page.getByText('Đang chạy').first().waitFor();
+  await shot(page, '12-hub-the-dang-chay-truoc-khi-dung-game');
   const pid = readFileSync('/tmp/hub-dev/wd.pid', 'utf8').trim();
   process.kill(Number(pid));
   const t0 = Date.now();
   let flipped = false;
   try { await page.getByText('Không phản hồi').first().waitFor({ timeout: 50000 }); flipped = true; } catch { /* hết hạn */ }
+  await shot(page, '13-hub-the-khong-phan-hoi');
   rec('AC-08.2', flipped, `dừng WordDefender: thẻ chuyển "Không phản hồi" sau ${((Date.now() - t0) / 1000).toFixed(0)}s mà không tải lại trang`);
   // AC-03.14: lệnh reset-totp thật (chạy lệnh trong tiến trình hub giống `docker exec`): mã cũ hết dùng, mã mới dùng được
   const env = { ...process.env, DATABASE_URL: 'mysql://root:devroot@127.0.0.1:33061/hub_dev', HUB_ORIGIN: HUB, COOKIE_SECURE: 'false', HUB_MASTER_KEY_FILE: '/tmp/hub-dev/master.key', HUB_SETUP_TOKEN_FILE: '/tmp/hub-dev/setup-token' };
