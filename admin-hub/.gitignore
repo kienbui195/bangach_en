@@ -1,2 +1,4 @@
 # Prisma client sinh ra khi build
 src/generated/
+# Bản build giao diện
+web-dist/

@@ -92,7 +92,7 @@ const vocabularies: ResourceDefinition = {
         filter: true,
       }),
       f('kind', 'Loại', 'enum', { required: true, enum: ['word', 'term', 'abbreviation'], filter: true }),
-      f('ownerKey', 'Bộ từ', 'string', { required: true, filter: true, maxLength: 64 }),
+      f('ownerKey', 'Bộ từ', 'string', { filter: true, maxLength: 64, hint: 'Để trống = bộ chính thức (official)' }),
       f('topicSlug', 'Chặng (slug)', 'string', { list: true, filter: true, maxLength: 100 }),
       f('levelNumber', 'Số màn', 'int', { list: true, filter: true, sortable: true }),
       f('orderIndex', 'Thứ tự trong màn', 'int', { sortable: true }),

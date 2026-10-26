@@ -121,8 +121,8 @@ export class ResourcesService {
     return { data, errors };
   }
 
-  private hasDefault(def: ResourceDefinition, f: FieldMeta) {
-    return def.meta.key === 'vocabularies' && f.name === 'ownerKey';
+  private hasDefault(_def: ResourceDefinition, _f: FieldMeta) {
+    return false;
   }
 
   private coerceOne(f: FieldMeta, v: unknown, data: Record<string, unknown>): string | null {

@@ -17,6 +17,8 @@ export interface FieldMeta {
   sortable?: boolean;
   maxLength?: number;
   enum?: string[];
+  /** Gợi ý hiện dưới ô nhập (ví dụ giá trị mặc định khi để trống). */
+  hint?: string;
 }
 
 export interface ActionMeta {
