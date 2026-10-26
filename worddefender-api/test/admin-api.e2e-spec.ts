@@ -29,7 +29,7 @@ describe('admin-api', () => {
       .overrideProvider(ADMIN_API_TOKEN)
       .useValue(TOKEN)
       .compile();
-    app = moduleRef.createNestApplication<NestExpressApplication>();
+    app = moduleRef.createNestApplication<NestExpressApplication>({ bodyParser: false });
     configureApp(app);
     await app.init();
     prisma = app.get(PrismaService);
@@ -58,7 +58,7 @@ describe('admin-api', () => {
 
     it('chưa cấu hình token thì từ chối hết', async () => {
       const m = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(ADMIN_API_TOKEN).useValue(undefined).compile();
-      const a = m.createNestApplication<NestExpressApplication>();
+      const a = m.createNestApplication<NestExpressApplication>({ bodyParser: false });
       await a.init();
       await request(a.getHttpServer()).get('/admin-api/meta').set('Authorization', 'Bearer undefined').expect(401);
       await a.close();

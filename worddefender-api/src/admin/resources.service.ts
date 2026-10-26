@@ -121,6 +121,11 @@ export class ResourcesService {
     return { data, errors };
   }
 
+  /** Dùng cho nhập hàng loạt: giá trị dòng đã đổi kiểu theo hợp đồng; thiếu trường bắt buộc là lỗi (khi tạo mới). */
+  coerceForImport(def: ResourceDefinition, values: Record<string, unknown>) {
+    return this.coerce(def, values, true);
+  }
+
   private hasDefault(_def: ResourceDefinition, _f: FieldMeta) {
     return false;
   }

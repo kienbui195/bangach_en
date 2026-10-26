@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
+import { configureApp } from '../src/app.setup.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 
 /** Chạy trên MySQL thật (DATABASE_URL trỏ database test). Mỗi test dọn sạch dữ liệu của nó (BR, độc lập). */
@@ -19,7 +20,8 @@ describe('GET /api/content (US-01)', () => {
 
   beforeAll(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    app = moduleRef.createNestApplication<NestExpressApplication>();
+    app = moduleRef.createNestApplication<NestExpressApplication>({ bodyParser: false });
+    configureApp(app);
     await app.init();
     prisma = app.get(PrismaService);
   });

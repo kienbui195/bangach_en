@@ -105,6 +105,9 @@ const vocabularies: ResourceDefinition = {
       ts('updatedAt', 'Sửa lúc'),
     ],
   },
+  normalizeKey: (v) => v.trim().toLowerCase(),
+  findExisting: (delegate, _matchKey, data) =>
+    delegate.findFirst({ where: { ownerKey: (data.ownerKey as string | undefined) ?? 'official', headword: data.headword } }),
   /** BR16: chuẩn hóa headword, chỉ a-z 2 đến 16 ký tự, không trùng trong cùng bộ. */
   async validate({ data, existing, delegate }) {
     const errors: FieldError[] = [];

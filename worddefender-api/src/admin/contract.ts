@@ -28,6 +28,10 @@ export interface ActionMeta {
   when?: { field: string; equals: string };
   /** Cần ghi chú khi thực hiện (ví dụ từ chối). */
   needsNote?: boolean;
+  /** `record` (mặc định): áp dụng cho một bản ghi; `resource`: áp dụng cho cả tài nguyên (ví dụ đặt lại luật mặc định). */
+  target?: 'record' | 'resource';
+  /** Danh sách lựa chọn gửi kèm dưới tên `option` (rỗng nghĩa là mọi nhóm). */
+  options?: { value: string; label: string }[];
 }
 
 export interface ResourceMeta {

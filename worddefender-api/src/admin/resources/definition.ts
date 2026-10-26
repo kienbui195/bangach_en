@@ -22,6 +22,10 @@ export interface ResourceDefinition {
   meta: ResourceMeta;
   /** Tên delegate trong PrismaClient. */
   model: string;
+  /** Chuẩn hóa giá trị khóa đối chiếu của file nhập trước khi tìm (ví dụ chữ thường). */
+  normalizeKey?: (value: string) => string;
+  /** Tìm bản ghi sẵn có ứng với một dòng nhập; mặc định khớp theo khóa đối chiếu. */
+  findExisting?: (delegate: Delegate, matchKey: string, data: Record<string, unknown>) => Promise<Record<string, unknown> | null>;
   /** Luật nghiệp vụ của game (BR13: nằm ở máy chủ game, không ở dashboard). */
   validate?: (ctx: ValidationContext) => Promise<FieldError[]>;
 }

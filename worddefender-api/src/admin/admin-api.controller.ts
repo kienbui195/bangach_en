@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { ImportExportService, type ImportInput } from './import-export.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AdminTokenGuard } from './admin-token.guard.js';
 import { CONTRACT_VERSION, type GameMeta } from './contract.js';
@@ -14,6 +15,7 @@ export class AdminApiController {
   constructor(
     private readonly resources: ResourcesService,
     private readonly prisma: PrismaService,
+    private readonly importExport: ImportExportService,
   ) {}
 
   @Get('meta')
@@ -41,6 +43,16 @@ export class AdminApiController {
       rssMb: Math.round(process.memoryUsage().rss / 1048576),
       db,
     };
+  }
+
+  @Post(':resource/import')
+  import(@Param('resource') key: string, @Query('dryRun') dryRun: string | undefined, @Body() body: ImportInput) {
+    return this.importExport.import(this.resources.find(key), dryRun !== 'false', body);
+  }
+
+  @Get(':resource/export')
+  export(@Param('resource') key: string, @Query() query: ListQuery & { format?: string }) {
+    return this.importExport.export(this.resources.find(key), query.format ?? 'csv', query);
   }
 
   @Get(':resource')
