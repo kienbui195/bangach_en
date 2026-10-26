@@ -2,3 +2,4 @@
 src/generated/
 # Bản build giao diện
 web-dist/
+*.tsbuildinfo
