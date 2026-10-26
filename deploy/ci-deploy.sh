@@ -5,6 +5,7 @@
 #        ci-deploy all        (mọi dịch vụ)
 #        ci-deploy rollback   (về commit đã triển khai thành công trước đó)
 set -euo pipefail
+export PATH=/usr/local/bin:/srv/bin:$PATH
 
 REPO=/srv/projects/worddefender
 STATE=/srv/projects/.worddefender-deployed   # commit đã triển khai thành công gần nhất, và commit trước nó
@@ -49,7 +50,7 @@ for dir in "${!SERVICE[@]}"; do
   if changed_dir "$dir"; then
     echo "--- $dir -> $svc"
     rsync -a --delete "${EXCLUDES[@]}" "$REPO/$dir/" "/srv/apps/$svc/"
-    /srv/bin/svc deploy "$svc"
+    svc deploy "$svc"
     deployed+=("$svc")
   fi
 done
