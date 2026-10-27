@@ -16,6 +16,12 @@ function cell(f: FieldMeta, v: unknown) {
   return s.length > 80 ? `${s.slice(0, 80)}…` : s;
 }
 
+/** Máy chủ game có thể trả kèm `message` (vd. khôi phục ghi tên bản tự sao lưu); không có thì dùng câu mặc định. */
+const resultMessage = (r: unknown) => {
+  const m = (r as { message?: unknown } | null)?.message;
+  return typeof m === 'string' && m ? m : undefined;
+};
+
 /** US-04: bảng dựng từ hợp đồng: tìm, lọc, sắp xếp, phân trang, thêm, sửa, xóa. */
 export function ResourceTable({ gameKey, resource }: { gameKey: string; resource: ResourceMeta }) {
   const qc = useQueryClient();
@@ -52,16 +58,16 @@ export function ResourceTable({ gameKey, resource }: { gameKey: string; resource
   /** US-07: thao tác riêng của game trên một bản ghi (duyệt, từ chối...). */
   const act = useMutation({
     mutationFn: ({ id, name, note }: { id: unknown; name: string; note?: string; label: string }) => api(`/games/${gameKey}/admin/${resource.key}/${String(id)}/actions/${name}`, { method: 'POST', body: { note } }),
-    onSuccess: (_r, v) => {
-      setNotice(`Đã thực hiện: ${v.label}`);
+    onSuccess: (r, v) => {
+      setNotice(resultMessage(r) ?? `Đã thực hiện: ${v.label}`);
       return refreshAll();
     },
   });
   /** Thao tác trên cả tài nguyên (ví dụ "Sao lưu ngay"). */
   const actAll = useMutation({
     mutationFn: ({ name }: { name: string; label: string }) => api(`/games/${gameKey}/admin/${resource.key}/actions/${name}`, { method: 'POST', body: {} }),
-    onSuccess: (_r, v) => {
-      setNotice(`Đã thực hiện: ${v.label}`);
+    onSuccess: (r, v) => {
+      setNotice(resultMessage(r) ?? `Đã thực hiện: ${v.label}`);
       return refreshAll();
     },
   });

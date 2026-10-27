@@ -39,7 +39,9 @@ export interface BackupRow {
 export const backupDir = () => process.env.BACKUP_DIR ?? join(process.cwd(), 'backups');
 const bad = (message: string, status = HttpStatus.UNPROCESSABLE_ENTITY, code = 'validation') => apiError(status, code, message);
 const notFound = () => notFoundError('Không tìm thấy bản sao lưu');
-const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
+/** Tên file theo giờ Việt Nam (+7, cố định, không phụ thuộc múi giờ máy chủ) để khớp cột "Tạo lúc" trên hub. */
+const VN_OFFSET_MS = 7 * 3_600_000;
+const stamp = (d: Date) => new Date(d.getTime() + VN_OFFSET_MS).toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
 
 @Injectable()
 export class BackupsService implements OnApplicationBootstrap, OnApplicationShutdown {
@@ -193,7 +195,7 @@ export class BackupsService implements OnApplicationBootstrap, OnApplicationShut
         { timeout: 120_000, maxWait: 10_000 },
       );
       this.cache.clear();
-      return { ok: true, restored: name, safetyBackup: safety.name, topics: snap.tables.topic.length, levels: snap.tables.level.length, vocabularies: snap.tables.vocabulary.length };
+      return { ok: true, message: `Đã khôi phục từ ${name}. Trạng thái trước đó được lưu ở bản ${safety.name} (dùng nó để quay lại).`, restored: name, safetyBackup: safety.name, topics: snap.tables.topic.length, levels: snap.tables.level.length, vocabularies: snap.tables.vocabulary.length };
     } catch (e) {
       if (e instanceof HttpException) throw e;
       this.log.error(`Khôi phục ${name} lỗi: ${e instanceof Error ? e.message : String(e)}`);

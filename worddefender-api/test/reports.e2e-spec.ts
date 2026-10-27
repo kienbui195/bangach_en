@@ -230,7 +230,7 @@ describe('báo lỗi từ vựng', () => {
       expect(reset.body.rules.pace.fallFactor).toBe(99);
       expect(reset.body.version).toBe(saved.version + 1);
       const all = await admin('post', '/game-config/actions/reset-defaults').send({ updatedAt: reset.body.updatedAt }).expect(201);
-      expect(all.body.rules.pace.fallFactor).toBe(7);
+      expect(all.body.rules.pace.fallFactor).toBe(10.5);
     });
 
     it('đặt lại khi bản ghi đã bị người khác sửa thì 409; nhóm không có trong bộ mặc định thì 422', async () => {

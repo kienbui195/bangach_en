@@ -104,6 +104,9 @@ describe('admin-api: sao lưu và khôi phục', () => {
     const made = (await api('post', '/backups/actions/backup-now').expect(200)).body;
     expect(made).toMatchObject({ kind: 'manual', topics: 1, levels: 1, vocabularies: 2, wordReports: 1 });
     expect(files()).toEqual([made.name]);
+    // tên file theo giờ Việt Nam (+7) để khớp cột "Tạo lúc" trên hub
+    const vn = new Date(new Date(made.createdAt).getTime() + 7 * 3_600_000).toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
+    expect(made.name).toBe(`wd-${vn}-manual.json.gz`);
     const list = (await api('get', '/backups').expect(200)).body;
     expect(list).toMatchObject({ total: 1, page: 1 });
     expect(list.items[0]).toMatchObject({ name: made.name, vocabularies: 2 });
@@ -123,6 +126,8 @@ describe('admin-api: sao lưu và khôi phục', () => {
 
     const res = (await api('post', `/backups/${name}/actions/restore`).expect(200)).body;
     expect(res).toMatchObject({ ok: true, restored: name, topics: 1, levels: 1, vocabularies: 2 });
+    expect(res.message).toContain(name);
+    expect(res.message).toContain(res.safetyBackup);
     const after = await state();
     expect(after.topics).toEqual(before.topics);
     expect(after.levels).toEqual(before.levels);

@@ -46,8 +46,8 @@ export interface GameRules {
 
 export const GAME_RULES: GameRules = {
   pace: {
-    fallFactor: 7,
-    fallDurationClampSec: [12, 45],
+    fallFactor: 10.5,
+    fallDurationClampSec: [18, 67.5],
     avgWordLength: 6,
     failSlowdown: { perFail: 1.08, maxFails: 5, maxFactor: 1.4 },
     concurrent: { easy: [3, 5], medium: [6, 10], hard: [11, 15], boss: 15 },
